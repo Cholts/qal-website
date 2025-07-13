@@ -363,19 +363,41 @@
 
         // --- Firestore and Storage Paths Constants ---
         // These paths define the structure within your Firebase project.
-        // Data will be stored under: artifacts/{projectId}/public/data/...
-        const PUBLIC_DATA_BASE_PATH = `artifacts/${appId}/public/data`;
-        
-        // This document will store an array of admin UIDs (users/{adminUsersDocId})
-        const ADMIN_USERS_COLLECTION_NAME = 'users'; // Top-level collection for users
-        const ADMIN_USERS_DOC_ID = 'adminUsers';     // Document containing admin UIDs
+        // Based on the security rules and Firestore best practices, we'll use this structure:
+        // /artifacts/{appId}/public/data (document)
+        //   /publications (subcollection)
+        //   /news (subcollection)
+        //   /_site_meta (subcollection)
+        //     /currentIssue (document)
+        //     /siteConfiguration (document)
 
-        const PUBLIC_PUB_COLLECTION_NAME = 'publications';
-        const PUBLIC_NEWS_COLLECTION_NAME = 'news';
-        const PUBLIC_CURRENT_ISSUE_DOC_ID = 'currentIssue'; // Document directly under public/data
-        const SITE_CONFIGURATION_DOC_ID = 'siteConfiguration'; // Document for site logos and settings
+        // Define the base document reference for public data
+        const baseDataDocRef = doc(db, 'artifacts', appId, 'public', 'data');
+        console.log("Base Data Document Reference Path:", baseDataDocRef.path);
 
-        // File storage paths will be: artifacts/{projectId}/public/files/...
+        // Define collection references under baseDataDocRef
+        const publicationsCollectionRef = collection(baseDataDocRef, 'publications');
+        console.log("Publications Collection Reference Path:", publicationsCollectionRef.path);
+
+        const newsCollectionRef = collection(baseDataDocRef, 'news');
+        console.log("News Collection Reference Path:", newsCollectionRef.path);
+
+        // Define a subcollection for site-wide documents like currentIssue and siteConfiguration
+        // This ensures currentIssue and siteConfiguration are documents within a collection (even segments)
+        const siteMetaCollectionRef = collection(baseDataDocRef, '_site_meta'); // New subcollection
+        console.log("Site Meta Collection Reference Path:", siteMetaCollectionRef.path);
+
+        const currentIssueDocRef = doc(siteMetaCollectionRef, 'currentIssue');
+        console.log("Current Issue Document Reference Path:", currentIssueDocRef.path);
+
+        const siteConfigurationDocRef = doc(siteMetaCollectionRef, 'siteConfiguration');
+        console.log("Site Configuration Document Reference Path:", siteConfigurationDocRef.path);
+
+        // Admin Users Collection/Document (remains unchanged as it's a top-level collection)
+        const ADMIN_USERS_COLLECTION_NAME = 'users';
+        const ADMIN_USERS_DOC_ID = 'adminUsers';
+
+        // File storage paths (remain unchanged as they don't have the same segment restrictions)
         const STORAGE_BASE_PATH = `artifacts/${appId}/public/files`;
         const STORAGE_PATH_COVERS = `${STORAGE_BASE_PATH}/covers`;
         const STORAGE_PATH_PDFS = `${STORAGE_BASE_PATH}/pdfs`;
@@ -1063,10 +1085,10 @@
          */
         async function listenForSiteLogos() {
             try {
-                const docRef = doc(db, PUBLIC_DATA_BASE_PATH, SITE_CONFIGURATION_DOC_ID);
-                console.log("Listening for site configuration at:", docRef.path);
+                // Use the new siteConfigurationDocRef
+                console.log("Listening for site configuration at:", siteConfigurationDocRef.path);
 
-                unsubscribeSiteConfig = onSnapshot(docRef, (docSnap) => {
+                unsubscribeSiteConfig = onSnapshot(siteConfigurationDocRef, (docSnap) => {
                     console.log("Site config snapshot received. Exists:", docSnap.exists());
                     if (docSnap.exists()) {
                         const config = docSnap.data();
@@ -1082,7 +1104,7 @@
                         currentContributor2Logo.url = config.contributor2LogoUrl || DEFAULT_CONTRIB2_LOGO_URL;
                         currentContributor2Logo.fileName = config.contributor2LogoFileName || '';
                     } else {
-                        console.warn(`Site configuration document '${SITE_CONFIGURATION_DOC_ID}' not found. Using defaults.`);
+                        console.warn(`Site configuration document '${siteConfigurationDocRef.path}' not found. Using defaults.`);
                         // Ensure global states revert to defaults if doc doesn't exist
                         currentHeaderLogo = { url: DEFAULT_HEADER_LOGO_URL, fileName: '' }; 
                         currentFooterLogo = { url: DEFAULT_FOOTER_LOGO_URL, fileName: '' };
@@ -1147,9 +1169,9 @@
          * Listens for real-time changes to publications in Firestore and displays them.
          */
         function listenForPublicPublications() {
-            const publicationsRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME);
-            const q = query(publicationsRef, orderBy("year", "desc"));
-            console.log("Listening for public publications at:", q._query.path.segments.join('/'));
+            // Use the new publicationsCollectionRef
+            const q = query(publicationsCollectionRef, orderBy("year", "desc"));
+            console.log("Listening for public publications at:", publicationsCollectionRef.path);
 
             unsubscribePublications = onSnapshot(q, (snapshot) => {
                 console.log("Public publications snapshot received. Docs count:", snapshot.docs.length);
@@ -1170,7 +1192,7 @@
          * Listens for real-time changes to the current issue document in Firestore.
          */
         function listenForCurrentIssue() {
-            const currentIssueDocRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_CURRENT_ISSUE_DOC_ID);
+            // Use the new currentIssueDocRef
             console.log("Listening for current issue at:", currentIssueDocRef.path);
 
             unsubscribeCurrentIssue = onSnapshot(currentIssueDocRef, async (docSnap) => {
@@ -1181,7 +1203,7 @@
                     const issueData = docSnap.data();
                     if (issueData.publicationId) {
                         // Fetch the actual publication details using the publicationId
-                        const pubDocRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, issueData.publicationId);
+                        const pubDocRef = doc(publicationsCollectionRef, issueData.publicationId);
                         const pubDocSnap = await getDoc(pubDocRef);
 
                         if (pubDocSnap.exists()) {
@@ -1233,9 +1255,9 @@
          * Listens for real-time changes to news items in Firestore.
          */
         function listenForNews() {
-            const newsRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME);
-            const q = query(newsRef, orderBy("timestamp", "desc"));
-            console.log("Listening for news at:", q._query.path.segments.join('/'));
+            // Use the new newsCollectionRef
+            const q = query(newsCollectionRef, orderBy("timestamp", "desc"));
+            console.log("Listening for news at:", newsCollectionRef.path);
 
             unsubscribeNews = onSnapshot(q, (snapshot) => {
                 const newsFeedDiv = document.getElementById('newsFeed');
@@ -1349,7 +1371,7 @@
             document.querySelectorAll(`#${containerId} .view-publication-details`).forEach(btn => {
                 btn.addEventListener('click', async (e) => {
                     const bookId = e.target.dataset.id;
-                    const docRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, bookId);
+                    const docRef = doc(publicationsCollectionRef, bookId); // Use publicationsCollectionRef
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         showPublicationDetailsModal(docSnap.data());
@@ -1366,8 +1388,8 @@
          * Listens for real-time changes to publications in Firestore for admin view.
          */
         function listenForAdminPublications() {
-            const publicationsRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME);
-            const q = query(publicationsRef, orderBy("timestamp", "desc"));
+            // Use the new publicationsCollectionRef
+            const q = query(publicationsCollectionRef, orderBy("timestamp", "desc"));
 
             // Unsubscribe previous listener to avoid memory leaks/duplicates
             if (unsubscribeAdminPublications) unsubscribeAdminPublications();
@@ -1411,8 +1433,8 @@
          * Listens for real-time changes to news items in Firestore for admin view.
          */
         function listenForAdminNews() {
-            const newsRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME);
-            const q = query(newsRef, orderBy("timestamp", "desc"));
+            // Use the new newsCollectionRef
+            const q = query(newsCollectionRef, orderBy("timestamp", "desc"));
 
             // Unsubscribe previous listener
             if (unsubscribeAdminNews) unsubscribeAdminNews();
@@ -1446,7 +1468,7 @@
                 document.querySelectorAll('.delete-news-button').forEach(btn => btn.addEventListener('click', (e) => confirmDeleteNewsItem(e.target.dataset.id)));
             }, (error) => {
                 console.error("Error listening for admin news:", error);
-                document.getElementById('adminNewsList').innerHTML = `<tr class="admin-table-row"><td colspan="3" class="px-6 py-4 text-center text-red-500">${translations[currentLanguage]?.errorLoadingAdminNews || 'Error loading news.'}</td></tr>`;
+                document.getElementById('adminNewsList').innerHTML = `<tr class="admin-table-row"><td colspan="3" class="px-6 py-4 text-center text-red-500">${translations[currentLanguage]?.errorLoadingAdminNews || 'Error loading news.'}</p>`;
             });
         }
         
@@ -1558,36 +1580,36 @@
 
                 if (editingPublicationId) {
                     // Update existing publication
-                    await updateDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, editingPublicationId), pubData);
+                    await updateDoc(doc(publicationsCollectionRef, editingPublicationId), pubData); // Use publicationsCollectionRef
                     showMessageModal(translations[currentLanguage]?.successMessage || "Success", translations[currentLanguage]?.publicationUpdated || "Pubblicazione aggiornata con successo!", "success");
                     // Update currentIssue document if this publication is set as current
                     if (isCurrentIssue) {
-                        await setDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_CURRENT_ISSUE_DOC_ID), { publicationId: editingPublicationId });
+                        await setDoc(currentIssueDocRef, { publicationId: editingPublicationId }); // Use currentIssueDocRef
                     } else { // If this was current and now unchecked, remove it from currentIssue
-                        const currentIssueDoc = await getDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_CURRENT_ISSUE_DOC_ID));
+                        const currentIssueDoc = await getDoc(currentIssueDocRef); // Use currentIssueDocRef
                         if (currentIssueDoc.exists() && currentIssueDoc.data().publicationId === editingPublicationId) {
-                            await deleteDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_CURRENT_ISSUE_DOC_ID));
+                            await deleteDoc(currentIssueDocRef); // Use currentIssueDocRef
                         }
                     }
                 } else {
                     // Add new publication
-                    const newDocRef = await addDoc(collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME), pubData);
+                    const newDocRef = await addDoc(publicationsCollectionRef, pubData); // Use publicationsCollectionRef
                     // If it's a new publication set as current, update the currentIssue document with its actual ID
                     if (isCurrentIssue) {
-                        await setDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_CURRENT_ISSUE_DOC_ID), { publicationId: newDocRef.id });
+                        await setDoc(currentIssueDocRef, { publicationId: newDocRef.id }); // Use currentIssueDocRef
                     }
                     showMessageModal(translations[currentLanguage]?.successMessage || "Success", translations[currentLanguage]?.publicationAdded || "Pubblicazione aggiunta con successo!", "success");
                 }
                 
                 // After successful add/update, ensure only one publication is marked as current if checked
                 if (isCurrentIssue) {
-                    const q = query(collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME), where("isCurrentIssue", "==", true));
+                    const q = query(publicationsCollectionRef, where("isCurrentIssue", "==", true)); // Use publicationsCollectionRef
                     const snap = await getDocs(q);
                     for (const d of snap.docs) {
                         // Unset isCurrentIssue for all other publications, unless it's the one being edited/added
                         const currentPubId = editingPublicationId || (newDocRef ? newDocRef.id : null);
                         if (d.id !== currentPubId) {
-                            await updateDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, d.id), { isCurrentIssue: false });
+                            await updateDoc(doc(publicationsCollectionRef, d.id), { isCurrentIssue: false }); // Use publicationsCollectionRef
                         }
                     }
                 }
@@ -1628,7 +1650,7 @@
         async function editPublication(pubId) {
             showLoadingSpinner();
             try {
-                const docRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, pubId);
+                const docRef = doc(publicationsCollectionRef, pubId); // Use publicationsCollectionRef
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const d = docSnap.data();
@@ -1699,7 +1721,7 @@
                 if (confirmed) {
                     showLoadingSpinner();
                     try {
-                        const docRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, pubId);
+                        const docRef = doc(publicationsCollectionRef, pubId); // Use publicationsCollectionRef
                         const docSnap = await getDoc(docRef);
                         if (docSnap.exists()) {
                             const d = docSnap.data();
@@ -1713,9 +1735,9 @@
                             await deleteDoc(docRef); // Delete the document from Firestore
 
                             // If the deleted publication was the current issue, clear the currentIssue document
-                            const currentIssueDoc = await getDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_CURRENT_ISSUE_DOC_ID));
+                            const currentIssueDoc = await getDoc(currentIssueDocRef); // Use currentIssueDocRef
                             if (currentIssueDoc.exists() && currentIssueDoc.data().publicationId === pubId) {
-                                await deleteDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_CURRENT_ISSUE_DOC_ID));
+                                await deleteDoc(currentIssueDocRef); // Use currentIssueDocRef
                             }
 
                             showMessageModal(translations[currentLanguage]?.successMessage || "Success", translations[currentLanguage]?.publicationDeleted || "Pubblicazione eliminata con successo!", "success");
@@ -1773,10 +1795,10 @@
                 };
 
                 if (editingNewsItemId) {
-                    await updateDoc(doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME, editingNewsItemId), newsData);
+                    await updateDoc(doc(newsCollectionRef, editingNewsItemId), newsData); // Use newsCollectionRef
                     showMessageModal(translations[currentLanguage]?.successMessage || "Success", translations[currentLanguage]?.newsItemUpdated || "Notizia aggiornata con successo!", "success");
                 } else {
-                    await addDoc(collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME), newsData);
+                    await addDoc(newsCollectionRef, newsData); // Use newsCollectionRef
                     showMessageModal(translations[currentLanguage]?.successMessage || "Success", translations[currentLanguage]?.newsItemAdded || "Notizia aggiunta con successo!", "success");
                 }
                 resetAddNewsItemForm();
@@ -1831,7 +1853,7 @@
         async function editNewsItem(newsId) {
             showLoadingSpinner();
             try {
-                const docRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME, newsId);
+                const docRef = doc(newsCollectionRef, newsId); // Use newsCollectionRef
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const d = docSnap.data();
@@ -1871,7 +1893,7 @@
                 if (confirmed) {
                     showLoadingSpinner();
                     try {
-                        const newsRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME, newsId);
+                        const newsRef = doc(newsCollectionRef, newsId); // Use newsCollectionRef
                         const newsDoc = await getDoc(newsRef);
                         if (newsDoc.exists()) {
                             const d = newsDoc.data();
@@ -1960,7 +1982,7 @@
                 }
 
                 // Update siteConfiguration document (merge ensures other fields are not overwritten)
-                await setDoc(doc(db, PUBLIC_DATA_BASE_PATH, SITE_CONFIGURATION_DOC_ID), {
+                await setDoc(siteConfigurationDocRef, { // Use siteConfigurationDocRef
                     headerLogoUrl: newHeaderLogo.url,
                     headerLogoFileName: newHeaderLogo.fileName,
                     footerLogoUrl: newFooterLogo.url,
@@ -2014,7 +2036,7 @@
                 }
 
                 // Update siteConfiguration document
-                await setDoc(doc(db, PUBLIC_DATA_BASE_PATH, SITE_CONFIGURATION_DOC_ID), {
+                await setDoc(siteConfigurationDocRef, { // Use siteConfigurationDocRef
                     contributor1LogoUrl: newC1Logo.url,
                     contributor1LogoFileName: newC1Logo.fileName,
                     contributor2LogoUrl: newC2Logo.url,
