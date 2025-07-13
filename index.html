@@ -362,42 +362,31 @@
         const DEFAULT_CONTRIB2_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/siteLogos/default_contrib2_logo.png?alt=media&token=YOUR_TOKEN`; // Replace YOUR_TOKEN
 
         // --- Firestore and Storage Paths Constants ---
-        // These paths define the structure within your Firebase project.
-        // Based on the security rules and Firestore best practices, we'll use this structure:
-        // /artifacts/{appId}/public/data (document)
-        //   /publications (subcollection)
-        //   /news (subcollection)
-        //   /_site_meta (subcollection)
-        //     /currentIssue (document)
-        //     /siteConfiguration (document)
+        // These paths define the structure within your Firebase project,
+        // adhering strictly to Firestore's segment rules and your provided security rules.
+        // Base for public data: artifacts/{projectId}/public/data (This is a COLLECTION)
+        const publicDataBaseCollectionRef = collection(db, 'artifacts', appId, 'public', 'data');
+        console.log("Public Data Base Collection Reference Path:", publicDataBaseCollectionRef.path);
 
-        // Define the base document reference for public data
-        const baseDataDocRef = doc(db, 'artifacts', appId, 'public', 'data');
-        console.log("Base Data Document Reference Path:", baseDataDocRef.path);
-
-        // Define collection references under baseDataDocRef
-        const publicationsCollectionRef = collection(baseDataDocRef, 'publications');
+        // Collections under the publicDataBaseCollectionRef
+        const publicationsCollectionRef = collection(publicDataBaseCollectionRef, 'publications');
         console.log("Publications Collection Reference Path:", publicationsCollectionRef.path);
 
-        const newsCollectionRef = collection(baseDataDocRef, 'news');
+        const newsCollectionRef = collection(publicDataBaseCollectionRef, 'news');
         console.log("News Collection Reference Path:", newsCollectionRef.path);
 
-        // Define a subcollection for site-wide documents like currentIssue and siteConfiguration
-        // This ensures currentIssue and siteConfiguration are documents within a collection (even segments)
-        const siteMetaCollectionRef = collection(baseDataDocRef, '_site_meta'); // New subcollection
-        console.log("Site Meta Collection Reference Path:", siteMetaCollectionRef.path);
-
-        const currentIssueDocRef = doc(siteMetaCollectionRef, 'currentIssue');
+        // Documents directly under the publicDataBaseCollectionRef
+        const currentIssueDocRef = doc(publicDataBaseCollectionRef, 'currentIssue');
         console.log("Current Issue Document Reference Path:", currentIssueDocRef.path);
 
-        const siteConfigurationDocRef = doc(siteMetaCollectionRef, 'siteConfiguration');
+        const siteConfigurationDocRef = doc(publicDataBaseCollectionRef, 'siteConfiguration');
         console.log("Site Configuration Document Reference Path:", siteConfigurationDocRef.path);
 
         // Admin Users Collection/Document (remains unchanged as it's a top-level collection)
         const ADMIN_USERS_COLLECTION_NAME = 'users';
-        const ADMIN_USERS_DOC_ID = 'adminUsers';
+        const ADMIN_USERS_DOC_ID = 'adminUsers'; // Document containing admin UIDs
 
-        // File storage paths (remain unchanged as they don't have the same segment restrictions)
+        // File storage paths (remain unchanged as they are already correct)
         const STORAGE_BASE_PATH = `artifacts/${appId}/public/files`;
         const STORAGE_PATH_COVERS = `${STORAGE_BASE_PATH}/covers`;
         const STORAGE_PATH_PDFS = `${STORAGE_BASE_PATH}/pdfs`;
@@ -689,7 +678,9 @@
          * @param {string} lang - The language code ('en' or 'it').
          */
         function applyTranslations(lang) {
-            console.log(`applyTranslations: Applying language: ${lang}`); // Debug log
+            console.log(`applyTranslations: Attempting to apply language: ${lang}`); // Debug log
+            console.log("Translations object (at time of application):", translations); // Debug log: Check content of translations object
+
             document.querySelectorAll('[data-lang-key]').forEach(element => {
                 const key = element.dataset.langKey;
                 if (translations[lang] && translations[lang][key]) {
@@ -700,8 +691,16 @@
                     } else {
                         element.innerHTML = translations[lang][key]; // Use innerHTML for rich text
                     }
-                } else if (translations[lang]) {
-                    // console.warn(`Translation key "${key}" not found for language "${lang}".`);
+                } else {
+                    // Fallback: If translation not found, display the key itself for debugging
+                    if (element.tagName === 'INPUT' && element.hasAttribute('placeholder')) {
+                        element.placeholder = `[MISSING_TRANSLATION: ${key}]`;
+                    } else if (element.tagName === 'OPTION') {
+                        element.textContent = `[MISSING_TRANSLATION: ${key}]`;
+                    } else {
+                        element.innerHTML = `[MISSING_TRANSLATION: ${key}]`;
+                    }
+                    console.warn(`Translation key "${key}" not found for language "${lang}". Displaying fallback.`);
                 }
             });
             // Update active language button style
@@ -1468,7 +1467,7 @@
                 document.querySelectorAll('.delete-news-button').forEach(btn => btn.addEventListener('click', (e) => confirmDeleteNewsItem(e.target.dataset.id)));
             }, (error) => {
                 console.error("Error listening for admin news:", error);
-                document.getElementById('adminNewsList').innerHTML = `<tr class="admin-table-row"><td colspan="3" class="px-6 py-4 text-center text-red-500">${translations[currentLanguage]?.errorLoadingAdminNews || 'Error loading news.'}</p>`;
+                document.getElementById('adminNewsList').innerHTML = `<p class="col-span-full text-center text-red-500">${translations[currentLanguage]?.errorLoadingAdminNews || 'Error loading news.'}</p>`;
             });
         }
         
@@ -1549,11 +1548,10 @@
                         const res = await uploadFile(input.files[0], storagePath);
                         newUrl = res.url;
                         newFileName = res.fileName;
-                    } else if (editingPublicationId && currentFileState.fileName && !input.files[0]) { // Check if file was previously set and input is now empty
-                        // If editing, and no new file but previous image existed and was implicitly cleared (e.g. by not re-selecting)
-                        // This condition handles cases where a file was previously uploaded, but the user didn't select a new one, implying removal.
+                    } else if (editingPublicationId && currentFileState.fileName && input.files.length === 0) { 
+                        // If editing, and no new file but previous image existed and input is now empty (meaning user cleared it)
                         await deleteFile(currentFileState.fileName, storagePath);
-                        newUrl = ''; // Clear URL if image was explicitly removed
+                        newUrl = ''; // Clear URL if file was explicitly removed
                         newFileName = '';
                     }
                     return { url: newUrl, fileName: newFileName };
@@ -1752,7 +1750,7 @@
                     }
                 }
             });
-        }
+        });
 
         // News Form Actions (Add/Update)
         document.getElementById('addNewsItemForm').addEventListener('submit', async (e) => {
@@ -1779,8 +1777,8 @@
                     const res = await uploadFile(newsImageInput.files[0], STORAGE_PATH_NEWS_IMAGES);
                     imageUrl = res.url;
                     imageFileName = res.fileName;
-                } else if (editingNewsItemId && currentNewsImage.fileName && !newsImageInput.files[0]) { // Check if file was previously set and input is now empty
-                    // If editing, and no new file but previous image existed and was implicitly cleared (e.g. by not re-selecting)
+                } else if (editingNewsItemId && currentNewsImage.fileName && newsImageInput.files.length === 0) { 
+                    // If editing, and no new file but previous image existed and input is now empty (meaning user cleared it)
                     await deleteFile(currentNewsImage.fileName, STORAGE_PATH_NEWS_IMAGES);
                     imageUrl = ''; // Clear URL if image was explicitly removed
                     imageFileName = '';
@@ -2059,27 +2057,34 @@
 
         // --- Initial Setup on Window Load ---
         window.onload = function() {
-            // Populate views object (elements must exist in HTML)
-            views.aboutUs = document.getElementById('aboutUsView');
-            views.editorialBoard = document.getElementById('editorialBoardView');
-            views.currentIssue = document.getElementById('currentIssueView');
-            views.archivalVolumes = document.getElementById('archivalVolumesView');
-            views.editorialAndEthics = document.getElementById('editorialAndEthicsView');
-            views.newsEvents = document.getElementById('newsEventsView');
-            views.adminLogin = document.getElementById('adminLoginView');
-            views.adminDashboard = document.getElementById('adminDashboardView');
-            
-            // Apply initial language translations
-            applyTranslations(currentLanguage); 
-            
-            // Initialize Firebase auth listener and data listeners
-            initializeAuthListener(); // This will call setupDataListeners internally
-            
-            // Set current year in footer
-            document.getElementById('currentYear').textContent = new Date().getFullYear();
-            
-            // Explicitly show the default view (About Us)
-            showView('aboutUs'); 
+            try {
+                console.log("window.onload triggered.");
+                // Populate views object (elements must exist in HTML)
+                views.aboutUs = document.getElementById('aboutUsView');
+                views.editorialBoard = document.getElementById('editorialBoardView');
+                views.currentIssue = document.getElementById('currentIssueView');
+                views.archivalVolumes = document.getElementById('archivalVolumesView');
+                views.editorialAndEthics = document.getElementById('editorialAndEthicsView');
+                views.newsEvents = document.getElementById('newsEventsView');
+                views.adminLogin = document.getElementById('adminLoginView');
+                views.adminDashboard = document.getElementById('adminDashboardView');
+                
+                // Apply initial language translations
+                applyTranslations(currentLanguage); 
+                
+                // Initialize Firebase auth listener and data listeners
+                initializeAuthListener(); // This will call setupDataListeners internally
+                
+                // Set current year in footer
+                document.getElementById('currentYear').textContent = new Date().getFullYear();
+                
+                // Explicitly show the default view (About Us)
+                showView('aboutUs'); 
+                console.log("Initial setup completed.");
+            } catch (error) {
+                console.error("Critical error during window.onload initialization:", error);
+                showMessageModal(translations[currentLanguage]?.errorMessage || "Error", translations[currentLanguage]?.firebaseInitError || "An error occurred during initialization. Please check your console for details.", "error");
+            }
         };
 
         // --- Event Listeners for Page Interactions ---
