@@ -294,17 +294,17 @@
         import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, onSnapshot, query, orderBy, where, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // IMPORTANT: Replace the entire 'hardcodedFirebaseConfig' object below with your ACTUAL Firebase project configuration.
-        // You can find this in your Firebase Console -> Project settings -> Your apps -> Web app.
+        // --- START: CORRECT FIREBASE CONFIGURATION ---
         const hardcodedFirebaseConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY", // Replace with your actual API Key
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // Replace with your actual Auth Domain
-            projectId: "YOUR_PROJECT_ID", // Replace with your actual Project ID
-            storageBucket: "YOUR_PROJECT_ID.appspot.com", // Replace with your actual Storage Bucket
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace with your actual Messaging Sender ID
-            appId: "YOUR_APP_ID", // Replace with your actual App ID
-            measurementId: "YOUR_MEASUREMENT_ID" // Optional, replace if you use Google Analytics
+            "apiKey": "AIzaSyAczHmVPkPxGzxg3D_7nqOZAnEqnQjfk90",
+            "authDomain": "qal-website-cms.firebaseapp.com",
+            "projectId": "qal-website-cms",
+            "storageBucket": "qal-website-cms.firebasestorage.app",
+            "messagingSenderId": "59618017596",
+            "appId": "1:59618017596:web:b628596bae2a11698bde39",
+            "measurementId": "G-7NGEGN9N8E"
         };
+        // --- END: CORRECT FIREBASE CONFIGURATION ---
         
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : hardcodedFirebaseConfig;
         const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
@@ -315,10 +315,10 @@
         // The structure for Firebase Storage URLs is generally:
         // https://firebasestorage.googleapis.com/v0/b/{your_storage_bucket}/o/artifacts/{your_project_id}/public/files/logos/{filename}?alt=media&token=YOUR_TOKEN
         // You might need to update these if your default images are stored differently or if you want to use specific public URLs.
-        const DEFAULT_HEADER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_header_logo.png?alt=media&token=YOUR_TOKEN`; 
-        const DEFAULT_FOOTER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_footer_logo.png?alt=media&token=YOUR_TOKEN`;
-        const DEFAULT_CONTRIB1_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib1_logo.png?alt=media&token=YOUR_TOKEN`;
-        const DEFAULT_CONTRIB2_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib2_logo.png?alt=media&token=YOUR_TOKEN`;
+        const DEFAULT_HEADER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_header_logo.png?alt=media`; 
+        const DEFAULT_FOOTER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_footer_logo.png?alt=media`;
+        const DEFAULT_CONTRIB1_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib1_logo.png?alt=media`;
+        const DEFAULT_CONTRIB2_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib2_logo.png?alt=media`;
 
         const SITE_CONFIGURATION_DOC_ID = 'siteConfiguration';
         const PUBLIC_DATA_BASE_PATH = `artifacts/${appId}/public/data`;
@@ -458,7 +458,7 @@
                 navNewsEvents: "Notizie & Eventi", adminLoginButton: "Accesso Admin", logoutButton: "Esci",
                 searchPlaceholder: "Cerca...", sortYearNewest: "Anno (Più Recente)", sortYearOldest: "Anno (Meno Recente)",
                 sortTitleAZ: "Titolo (A-Z)", sortTitleZA: "Titolo (Z-A)", sortAuthorAZ: "Autore (A-Z)",
-                sortAuthorZA: "Autore (A-Z)", loadingPublications: "Caricamento pubblicazioni...", noPubsFound: "Nessuna pubblicazione trovata.",
+                sortAuthorZA: "Autore (Z-A)", loadingPublications: "Caricamento pubblicazioni...", noPubsFound: "Nessuna pubblicazione trovata.",
                 noSearchResults: "Nessun risultato corrisponde ai criteri di ricerca/filtro.", viewDetailsButton: "Vedi Dettagli",
                 confirmDelete: "Conferma Eliminazione", confirmDeleteMsg: "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata e rimuoverà i file associati dallo storage.",
                 successMessage: "Successo", errorMessage: "Errore", permissionDenied: "Permesso Negato",
@@ -555,7 +555,7 @@
                 yesButton: "Sì", noButton: "No", okButton: "OK", editButton: "Modifica", deleteButton: "Elimina",
                 noArabicAbstract: "Nessun abstract arabo disponibile.", noEnglishAbstract: "Nessun abstract inglese disponibile.",
                 noItalianAbstract: "Nessun abstract italiano disponibile.", fileNotFoundInStorage: "File non trovato nello storage: ", fileDeletionFailed: "Eliminazione file fallita: ",
-                noTitle: "No Title", noAuthors: "No Authors", noYear: "No Year"
+                noTitle: "Nessun Titolo", noAuthors: "Nessun Autore", noYear: "Nessun Anno"
             },
             it: { 
                 pageTitle: "QAL - Pubblicazioni", navAboutUs: "Chi Siamo", navEditorialBoard: "Comitato Editoriale",
@@ -563,7 +563,7 @@
                 navNewsEvents: "Notizie & Eventi", adminLoginButton: "Accesso Admin", logoutButton: "Esci",
                 searchPlaceholder: "Cerca...", sortYearNewest: "Anno (Più Recente)", sortYearOldest: "Anno (Meno Recente)",
                 sortTitleAZ: "Titolo (A-Z)", sortTitleZA: "Titolo (Z-A)", sortAuthorAZ: "Autore (A-Z)",
-                sortAuthorZA: "Autore (A-Z)", loadingPublications: "Caricamento pubblicazioni...", noPubsFound: "Nessuna pubblicazione trovata.",
+                sortAuthorZA: "Autore (Z-A)", loadingPublications: "Caricamento pubblicazioni...", noPubsFound: "Nessuna pubblicazione trovata.",
                 noSearchResults: "Nessun risultato corrisponde ai criteri di ricerca/filtro.", viewDetailsButton: "Vedi Dettagli",
                 confirmDelete: "Conferma Eliminazione", confirmDeleteMsg: "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata e rimuoverà i file associati dallo storage.",
                 successMessage: "Successo", errorMessage: "Errore", permissionDenied: "Permesso Negato",
