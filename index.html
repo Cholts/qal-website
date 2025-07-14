@@ -294,7 +294,6 @@
         import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, onSnapshot, query, orderBy, where, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // --- START: CORRECT FIREBASE CONFIGURATION ---
         const hardcodedFirebaseConfig = {
             "apiKey": "AIzaSyAczHmVPkPxGzxg3D_7nqOZAnEqnQjfk90",
             "authDomain": "qal-website-cms.firebaseapp.com",
@@ -304,45 +303,38 @@
             "appId": "1:59618017596:web:b628596bae2a11698bde39",
             "measurementId": "G-7NGEGN9N8E"
         };
-        // --- END: CORRECT FIREBASE CONFIGURATION ---
         
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : hardcodedFirebaseConfig;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
-        console.log("Using appId for Firestore paths:", appId);
+        const firebaseConfig = hardcodedFirebaseConfig;
+        const projectId = firebaseConfig.projectId;
 
-        // --- START: CORRECTED PATHS AND CONSTANTS ---
-        const DEFAULT_HEADER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_header_logo.png?alt=media`; 
-        const DEFAULT_FOOTER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_footer_logo.png?alt=media`;
-        const DEFAULT_CONTRIB1_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib1_logo.png?alt=media`;
-        const DEFAULT_CONTRIB2_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib2_logo.png?alt=media`;
-
-        const SITE_CONFIGURATION_DOC_ID = 'siteConfiguration';
-        const PUBLIC_DATA_BASE_PATH = `artifacts/${appId}/public/data`;
-        const ADMIN_MANAGEMENT_COLLECTION_NAME = 'adminManagement';
-        const SITE_MANAGEMENT_COLLECTION_NAME = 'siteManagement'; // This was missing conceptually
-        const ADMIN_USERS_DOC_ID = 'adminUsers';
-        const ADMIN_USERS_DOC_PATH = `${PUBLIC_DATA_BASE_PATH}/${ADMIN_MANAGEMENT_COLLECTION_NAME}/${ADMIN_USERS_DOC_ID}`;
-        const SITE_CONFIG_DOC_PATH = `${PUBLIC_DATA_BASE_PATH}/${SITE_MANAGEMENT_COLLECTION_NAME}/${SITE_CONFIGURATION_DOC_ID}`;
+        // --- START: CORRECTED AND SIMPLIFIED PATHS ---
+        // This section is now aligned with your existing database structure.
+        const ARTIFACTS_DOC_PATH = `artifacts/${projectId}`;
+        const PUBLIC_DATA_DOC_PATH = `${ARTIFACTS_DOC_PATH}/public/POkRAyD8IKbNUnh1TbM7`; // Using the specific ID from your DB
+        
+        const ADMIN_USERS_DOC_PATH = `${PUBLIC_DATA_DOC_PATH}/adminManagement/adminUsers`;
+        const SITE_CONFIG_DOC_PATH = `${PUBLIC_DATA_DOC_PATH}/siteManagement/siteConfiguration`;
 
         const PUBLIC_PUB_COLLECTION_NAME = 'publications';
         const PUBLIC_NEWS_COLLECTION_NAME = 'news';
-        const STORAGE_BASE_PATH = `artifacts/${appId}/public/files`;
+        
+        const STORAGE_BASE_PATH = `artifacts/${projectId}/public/files`;
         const STORAGE_PATH_COVERS = `${STORAGE_BASE_PATH}/covers`;
         const STORAGE_PATH_PDFS = `${STORAGE_BASE_PATH}/pdfs`;
         const STORAGE_PATH_ABSTRACTS = `${STORAGE_BASE_PATH}/abstracts`;
         const STORAGE_PATH_NEWS_IMAGES = `${STORAGE_BASE_PATH}/news`;
         const STORAGE_PATH_LOGOS = `${STORAGE_BASE_PATH}/logos`;
-        // --- END: CORRECTED PATHS AND CONSTANTS ---
+        // --- END: CORRECTED AND SIMPLIFIED PATHS ---
 
         let app, db, auth, storage;
         let editingPublicationId = null;
         let editingNewsItemId = null;
         let currentPubFiles = {coverUrl:'',coverFileName:'',pdfUrl:'',pdfFileName:'',abstracts:{ar:{text:'',url:'',fileName:''},en:{text:'',url:'',fileName:''},it:{text:'',url:'',fileName:''}}};
         let currentNewsImage = { url: '', fileName: '' };
-        let currentHeaderLogo = { url: DEFAULT_HEADER_LOGO_URL, fileName: '' };
-        let currentFooterLogo = { url: DEFAULT_FOOTER_LOGO_URL, fileName: '' };
-        let currentContributor1Logo = { url: DEFAULT_CONTRIB1_LOGO_URL, fileName: '' };
-        let currentContributor2Logo = { url: DEFAULT_CONTRIB2_LOGO_URL, fileName: '' };
+        let currentHeaderLogo = { url: '', fileName: '' };
+        let currentFooterLogo = { url: '', fileName: '' };
+        let currentContributor1Logo = { url: '', fileName: '' };
+        let currentContributor2Logo = { url: '', fileName: '' };
 
         let currentLanguage = localStorage.getItem('siteLanguage') || 'en';
         const translations = {
@@ -557,7 +549,6 @@
                 noTitle: "Nessun Titolo", noAuthors: "Nessun Autore", noYear: "Nessun Anno"
             }
         };
-        // --- COMPLETE SCRIPT WITH ALL FUNCTIONS ---
 
         const views = {};
 
@@ -725,20 +716,16 @@
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    currentHeaderLogo.url = data.headerLogoUrl || DEFAULT_HEADER_LOGO_URL;
+                    currentHeaderLogo.url = data.headerLogoUrl || '';
                     currentHeaderLogo.fileName = data.headerLogoFileName || '';
-                    currentFooterLogo.url = data.footerLogoUrl || DEFAULT_FOOTER_LOGO_URL;
+                    currentFooterLogo.url = data.footerLogoUrl || '';
                     currentFooterLogo.fileName = data.footerLogoFileName || '';
-                    currentContributor1Logo.url = data.contributor1LogoUrl || DEFAULT_CONTRIB1_LOGO_URL;
+                    currentContributor1Logo.url = data.contributor1LogoUrl || '';
                     currentContributor1Logo.fileName = data.contributor1LogoFileName || '';
-                    currentContributor2Logo.url = data.contributor2LogoUrl || DEFAULT_CONTRIB2_LOGO_URL;
+                    currentContributor2Logo.url = data.contributor2LogoUrl || '';
                     currentContributor2Logo.fileName = data.contributor2LogoFileName || '';
                 } else {
-                    console.warn(`Site configuration document '${SITE_CONFIGURATION_DOC_ID}' not found. Using defaults.`);
-                    currentHeaderLogo = { url: DEFAULT_HEADER_LOGO_URL, fileName: '' }; 
-                    currentFooterLogo = { url: DEFAULT_FOOTER_LOGO_URL, fileName: '' };
-                    currentContributor1Logo = { url: DEFAULT_CONTRIB1_LOGO_URL, fileName: '' };
-                    currentContributor2Logo = { url: DEFAULT_CONTRIB2_LOGO_URL, fileName: '' };
+                    console.warn(`Site configuration document not found at ${SITE_CONFIG_DOC_PATH}. Using defaults.`);
                 }
                 updateSiteLogosUI();
             }, (error) => {
@@ -748,41 +735,41 @@
             });
         }
         function updateSiteLogosUI() {
-            document.getElementById('mainHeaderLogo').src = currentHeaderLogo.url;
-            document.getElementById('mainFooterLogo').src = currentFooterLogo.url;
-            document.getElementById('contributor1Logo').src = currentContributor1Logo.url;
-            document.getElementById('contributor2Logo').src = currentContributor2Logo.url;
+            document.getElementById('mainHeaderLogo').src = currentHeaderLogo.url || 'https://placehold.co/200x120/d8dbdf/3f4245?text=Logo';
+            document.getElementById('mainFooterLogo').src = currentFooterLogo.url || 'https://placehold.co/150x80/a0a8b3/2c2f33?text=Logo';
+            document.getElementById('contributor1Logo').src = currentContributor1Logo.url || 'https://placehold.co/150x80/a0a8b3/2c2f33?text=Contributor+1';
+            document.getElementById('contributor2Logo').src = currentContributor2Logo.url || 'https://placehold.co/150x80/a0a8b3/2c2f33?text=Contributor+2';
 
             const adminPreviews = {
-                header: { imgId: 'headerLogoPreview', textId: 'headerLogoFileNameDisplayAdmin', current: currentHeaderLogo, defaultUrl: DEFAULT_HEADER_LOGO_URL, noMsgKey: 'noCustomHeaderLogo' },
-                footer: { imgId: 'footerLogoPreview', textId: 'footerLogoFileNameDisplayAdmin', current: currentFooterLogo, defaultUrl: DEFAULT_FOOTER_LOGO_URL, noMsgKey: 'noCustomFooterLogo' },
-                contributor1: { imgId: 'contributor1LogoPreview', textId: 'contributor1FileNameDisplayAdmin', current: currentContributor1Logo, defaultUrl: DEFAULT_CONTRIB1_LOGO_URL, noMsgKey: 'noLERMALogo' },
-                contributor2: { imgId: 'contributor2LogoPreview', textId: 'contributor2FileNameDisplayAdmin', current: currentContributor2Logo, defaultUrl: DEFAULT_CONTRIB2_LOGO_URL, noMsgKey: 'noMEDALogo' }
+                header: { imgId: 'headerLogoPreview', textId: 'headerLogoFileNameDisplayAdmin', current: currentHeaderLogo, noMsgKey: 'noCustomHeaderLogo' },
+                footer: { imgId: 'footerLogoPreview', textId: 'footerLogoFileNameDisplayAdmin', current: currentFooterLogo, noMsgKey: 'noCustomFooterLogo' },
+                contributor1: { imgId: 'contributor1LogoPreview', textId: 'contributor1FileNameDisplayAdmin', current: currentContributor1Logo, noMsgKey: 'noLERMALogo' },
+                contributor2: { imgId: 'contributor2LogoPreview', textId: 'contributor2FileNameDisplayAdmin', current: currentContributor2Logo, noMsgKey: 'noMEDALogo' }
             };
             for (const key in adminPreviews) {
-                const { imgId, textId, current, defaultUrl, noMsgKey } = adminPreviews[key];
+                const { imgId, textId, current, noMsgKey } = adminPreviews[key];
                 const imgEl = document.getElementById(imgId); const textEl = document.getElementById(textId);
                 if (imgEl && textEl) {
-                    imgEl.src = current.url || defaultUrl; 
-                    imgEl.style.display = (current.url && current.fileName) ? 'block' : 'none'; 
-                    textEl.textContent = current.fileName ? `${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(current.fileName)}` : translations[currentLanguage][noMsgKey];
+                    imgEl.src = current.url || ''; 
+                    imgEl.style.display = current.fileName ? 'block' : 'none'; 
+                    textEl.textContent = current.fileName ? `${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(current.fileName)}` : (translations[currentLanguage]?.[noMsgKey] || 'No logo set.');
                 }
             }
         }
         function loadSiteLogosForAdmin() { updateSiteLogosUI(); }
-        function handleLogoFileInput(inputElement, previewImgElement, fileNameDisplayElement, currentLogoState, defaultUrl, noMsgKey) {
+        function handleLogoFileInput(inputElement, previewImgElement, fileNameDisplayElement, currentLogoState, noMsgKey) {
             const file = inputElement.files[0];
             if (file) {
                 fileNameDisplayElement.textContent = `${translations[currentLanguage].selectedLabel}: ${file.name}`;
                 if (previewImgElement) { const reader = new FileReader(); reader.onload = (event) => { previewImgElement.src = event.target.result; previewImgElement.style.display = 'block'; }; reader.readAsDataURL(file); }
             } else {
-                fileNameDisplayElement.textContent = currentLogoState.fileName ? `${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentLogoState.fileName)}` : translations[currentLanguage][noMsgKey];
-                if (previewImgElement) { previewImgElement.src = currentLogoState.url || defaultUrl; previewImgElement.style.display = (currentLogoState.url && currentLogoState.fileName) ? 'block' : 'none'; }
+                fileNameDisplayElement.textContent = currentLogoState.fileName ? `${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentLogoState.fileName)}` : (translations[currentLanguage]?.[noMsgKey] || 'No logo set.');
+                if (previewImgElement) { previewImgElement.src = currentLogoState.url || ''; previewImgElement.style.display = (currentLogoState.url && currentLogoState.fileName) ? 'block' : 'none'; }
             }
         }
 
         function listenForPublicPublications() {
-            const pubCollRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME);
+            const pubCollRef = collection(db, PUBLIC_DATA_DOC_PATH, PUBLIC_PUB_COLLECTION_NAME);
             const q = query(pubCollRef, orderBy("year", "desc"));
             onSnapshot(q, (snapshot) => {
                 const publications = []; snapshot.forEach(doc => publications.push({ id: doc.id, ...doc.data() }));
@@ -790,7 +777,7 @@
             }, (error) => { console.error("Error listening to public publications:", error); const errorMsg = `<p class="col-span-full text-center text-red-500">${(translations[currentLanguage] && translations[currentLanguage].errorLoadingPublications) || 'Error loading publications.'}</p>`; document.getElementById('publicationsList').innerHTML = errorMsg; document.getElementById('archivalPublicationsList').innerHTML = errorMsg; });
         }
         function listenForCurrentIssue() {
-             const pubCollRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME);
+            const pubCollRef = collection(db, PUBLIC_DATA_DOC_PATH, PUBLIC_PUB_COLLECTION_NAME);
             const q = query(pubCollRef, where("isCurrentIssue", "==", true));
             onSnapshot(q, (snapshot) => {
                 const card = document.getElementById('currentIssuePublicationCard'); const noIssueMsg = document.getElementById('currentIssueContent').querySelector('p[data-lang-key="noCurrentIssue"]');
@@ -807,7 +794,7 @@
             }, (error) => { console.error("Error listening to current issue:", error); showMessageModal("errorMessage", "errorLoadingCurrentIssue", "error");});
         }
         function listenForNews() {
-            const newsCollRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME);
+            const newsCollRef = collection(db, PUBLIC_DATA_DOC_PATH, PUBLIC_NEWS_COLLECTION_NAME);
             const q = query(newsCollRef, orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => {
                 const newsFeedDiv = document.getElementById('newsFeed'); newsFeedDiv.innerHTML = '';
@@ -832,11 +819,11 @@
                 const cardHtml = `<div class="publication-card p-4 flex flex-col items-center text-center"><img src="${book.coverImageUrl||'https://placehold.co/400x600/e0e2e5/3f4245?text=No+Image'}" alt="${book.title||translations[currentLanguage]?.noTitle||'No Title'} Cover" class="cover-image rounded-md mb-4"><h3 class="text-xl font-bold mb-2">${book.title||translations[currentLanguage]?.noTitle||'No Title'}</h3><p class="mb-1">${book.authors||translations[currentLanguage]?.noAuthors||'No Authors'}</p><p class="text-sm font-medium">${book.year||translations[currentLanguage]?.noYear||'No Year'}</p><p class="text-sm mt-2 flex-grow overflow-hidden line-clamp-3">${book.description||translations[currentLanguage]?.noDescription||'No description.'}</p><button class="nav-button text-sm mt-4 view-publication-details" data-id="${book.id}" data-lang-key="viewDetailsButton">${translations[currentLanguage]?.viewDetailsButton||'View Details'}</button></div>`;
                 listDiv.innerHTML += cardHtml; archivalDiv.innerHTML += cardHtml;
             });
-            document.querySelectorAll('.view-publication-details').forEach(btn => btn.addEventListener('click', async (e) => { const bookId = e.target.dataset.id; const docRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, bookId); const docSnap = await getDoc(docRef); if (docSnap.exists()) showPublicationDetailsModal(docSnap.data()); else showMessageModal("errorMessage", "pubDetailsNotFound", "error"); }));
+            document.querySelectorAll('.view-publication-details').forEach(btn => btn.addEventListener('click', async (e) => { const bookId = e.target.dataset.id; const docRef = doc(db, PUBLIC_DATA_DOC_PATH, PUBLIC_PUB_COLLECTION_NAME, bookId); const docSnap = await getDoc(docRef); if (docSnap.exists()) showPublicationDetailsModal(docSnap.data()); else showMessageModal("errorMessage", "pubDetailsNotFound", "error"); }));
         }
         
         function listenForAdminPublications() {
-            const pubCollRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME); const q = query(pubCollRef, orderBy("timestamp", "desc"));
+            const pubCollRef = collection(db, PUBLIC_DATA_DOC_PATH, PUBLIC_PUB_COLLECTION_NAME); const q = query(pubCollRef, orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => {
                 const listBody = document.getElementById('adminPublicationsList'); listBody.innerHTML = '';
                 const noPubsMsg = `<tr class="admin-table-row"><td colspan="4" class="px-6 py-4" data-lang-key="noPublicationsToManage">${translations[currentLanguage]?.noPublicationsToManage || 'No publications.'}</td></tr>`;
@@ -863,7 +850,7 @@
         async function editPublication(pubId) {
             showLoadingSpinner(); 
             try {
-                const docRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, pubId); 
+                const docRef = doc(db, PUBLIC_DATA_DOC_PATH, PUBLIC_PUB_COLLECTION_NAME, pubId); 
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
                     const d = docSnap.data(); 
@@ -910,7 +897,7 @@
                 if(confirmed){ 
                     showLoadingSpinner(); 
                     try {
-                        const docRef=doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME,pubId); 
+                        const docRef=doc(db,PUBLIC_DATA_DOC_PATH,PUBLIC_PUB_COLLECTION_NAME,pubId); 
                         const docSnap=await getDoc(docRef);
                         if(docSnap.exists()){ 
                             const d=docSnap.data();
@@ -951,7 +938,7 @@
         async function editNewsItem(newsId){
             showLoadingSpinner(); 
             try{
-                const docRef=doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_NEWS_COLLECTION_NAME,newsId); 
+                const docRef=doc(db,PUBLIC_DATA_DOC_PATH,PUBLIC_NEWS_COLLECTION_NAME,newsId); 
                 const docSnap=await getDoc(docRef);
                 if(docSnap.exists()){ 
                     const d=docSnap.data(); 
@@ -982,7 +969,7 @@
                 if(confirmed){
                     showLoadingSpinner();
                     try{
-                        const newsRef=doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_NEWS_COLLECTION_NAME,newsId); 
+                        const newsRef=doc(db,PUBLIC_DATA_DOC_PATH,PUBLIC_NEWS_COLLECTION_NAME,newsId); 
                         const newsDoc=await getDoc(newsRef);
                         if(newsDoc.exists()){ 
                             const d=newsDoc.data(); 
@@ -1002,7 +989,7 @@
             });
         }
         function listenForAdminNews() {
-            const newsCollRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME); 
+            const newsCollRef = collection(db, PUBLIC_DATA_DOC_PATH, PUBLIC_NEWS_COLLECTION_NAME); 
             const q = query(newsCollRef, orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => {
                 const listBody = document.getElementById('adminNewsList'); 
@@ -1105,9 +1092,10 @@
                     const absEnRes = await uploadAndUpdate(document.getElementById('abstractEnPdf'), {url: currentPubFiles.abstracts.en.url, fileName: currentPubFiles.abstracts.en.fileName}, STORAGE_PATH_ABSTRACTS);
                     const absItRes = await uploadAndUpdate(document.getElementById('abstractItPdf'), {url: currentPubFiles.abstracts.it.url, fileName: currentPubFiles.abstracts.it.fileName}, STORAGE_PATH_ABSTRACTS);
                     const pubData = { title, authors, year, description, isbn, issn, abstracts: {ar:{text:abstractArText,url:absArRes.url,fileName:absArRes.fileName},en:{text:abstractEnText,url:absEnRes.url,fileName:absEnRes.fileName},it:{text:abstractItText,url:absItRes.url,fileName:absItRes.fileName}}, coverImageUrl:coverRes.url,coverImageFileName:coverRes.fileName,pdfUrl:pdfRes.url,pdfFileName:pdfRes.fileName, isCurrentIssue, timestamp:new Date().toISOString()};
-                    if (isCurrentIssue) { const q = query(collection(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME),where("isCurrentIssue","==",true)); const snap = await getDocs(q); for(const d of snap.docs) if(d.id!==editingPublicationId) await updateDoc(doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME,d.id),{isCurrentIssue:false});}
-                    if (editingPublicationId) { await updateDoc(doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME,editingPublicationId),pubData); showMessageModal("successMessage","publicationUpdated","success");}
-                    else { await addDoc(collection(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME),pubData); showMessageModal("successMessage","publicationAdded","success");}
+                    const pubCollRef = collection(db, PUBLIC_DATA_DOC_PATH, PUBLIC_PUB_COLLECTION_NAME);
+                    if (isCurrentIssue) { const q = query(pubCollRef,where("isCurrentIssue","==",true)); const snap = await getDocs(q); for(const d of snap.docs) if(d.id!==editingPublicationId) await updateDoc(doc(db,PUBLIC_DATA_DOC_PATH,PUBLIC_PUB_COLLECTION_NAME,d.id),{isCurrentIssue:false});}
+                    if (editingPublicationId) { await updateDoc(doc(db,PUBLIC_DATA_DOC_PATH,PUBLIC_PUB_COLLECTION_NAME,editingPublicationId),pubData); showMessageModal("successMessage","publicationUpdated","success");}
+                    else { await addDoc(pubCollRef,pubData); showMessageModal("successMessage","publicationAdded","success");}
                     resetAddPublicationForm();
                 } catch (error) { console.error("Error saving pub:", error); showMessageModal("errorMessage","errorSavingPublication"+error.message,"error");
                 } finally { hideLoadingSpinner(); }
@@ -1128,31 +1116,22 @@
                         imageUrl = ''; imageFileName = '';
                     }
                     const newsData={title,description,imageUrl,imageFileName,timestamp:new Date().toISOString()};
-                    if(editingNewsItemId){await updateDoc(doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_NEWS_COLLECTION_NAME,editingNewsItemId),newsData); showMessageModal("successMessage","newsItemUpdated","success");}
-                    else{await addDoc(collection(db,PUBLIC_DATA_BASE_PATH,PUBLIC_NEWS_COLLECTION_NAME),newsData); showMessageModal("successMessage","newsItemAdded","success");}
+                    const newsCollRef = collection(db, PUBLIC_DATA_DOC_PATH, PUBLIC_NEWS_COLLECTION_NAME);
+                    if(editingNewsItemId){await updateDoc(doc(db,PUBLIC_DATA_DOC_PATH,PUBLIC_NEWS_COLLECTION_NAME,editingNewsItemId),newsData); showMessageModal("successMessage","newsItemUpdated","success");}
+                    else{await addDoc(newsCollRef,newsData); showMessageModal("successMessage","newsItemAdded","success");}
                     resetAddNewsItemForm();
                 }catch(err){console.error("Save news err:",err);showMessageModal("errorMessage","errorSavingNewsItem"+err.message,"error");}
                 finally{hideLoadingSpinner();}
             });
             
-            document.getElementById('newsImage').addEventListener('change', (e) => {
-                const file=e.target.files[0];
-                if(file){ 
-                    document.getElementById('newsImageFileNameDisplayAdmin').textContent=`${translations[currentLanguage].selectedLabel}: ${file.name}`; 
-                    const r=new FileReader();r.onload=(ev)=>{document.getElementById('uploadedNewsImagePreviewAdmin').src=ev.target.result;document.getElementById('uploadedNewsImagePreviewAdmin').style.display='block';};r.readAsDataURL(file);
-                } else { 
-                    document.getElementById('newsImageFileNameDisplayAdmin').textContent=currentNewsImage.fileName?`${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentNewsImage.fileName)}`:''; 
-                    document.getElementById('uploadedNewsImagePreviewAdmin').src=currentNewsImage.url; 
-                    document.getElementById('uploadedNewsImagePreviewAdmin').style.display=currentNewsImage.url?'block':'none';
-                }
-            });
+            document.getElementById('newsImage').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('uploadedNewsImagePreviewAdmin'), document.getElementById('newsImageFileNameDisplayAdmin'), currentNewsImage, 'noNewsImage'));
             
             document.getElementById('cancelEditNewsBtn').addEventListener('click', resetAddNewsItemForm);
 
-            document.getElementById('headerLogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('headerLogoPreview'), document.getElementById('headerLogoFileNameDisplayAdmin'), currentHeaderLogo, DEFAULT_HEADER_LOGO_URL, 'noCustomHeaderLogo'));
-            document.getElementById('footerLogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('footerLogoPreview'), document.getElementById('footerLogoFileNameDisplayAdmin'), currentFooterLogo, DEFAULT_FOOTER_LOGO_URL, 'noCustomFooterLogo'));
-            document.getElementById('contributor1LogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('contributor1LogoPreview'), document.getElementById('contributor1FileNameDisplayAdmin'), currentContributor1Logo, DEFAULT_CONTRIB1_LOGO_URL, 'noLERMALogo'));
-            document.getElementById('contributor2LogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('contributor2LogoPreview'), document.getElementById('contributor2FileNameDisplayAdmin'), currentContributor2Logo, DEFAULT_CONTRIB2_LOGO_URL, 'noMEDALogo'));
+            document.getElementById('headerLogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('headerLogoPreview'), document.getElementById('headerLogoFileNameDisplayAdmin'), currentHeaderLogo, 'noCustomHeaderLogo'));
+            document.getElementById('footerLogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('footerLogoPreview'), document.getElementById('footerLogoFileNameDisplayAdmin'), currentFooterLogo, 'noCustomFooterLogo'));
+            document.getElementById('contributor1LogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('contributor1LogoPreview'), document.getElementById('contributor1FileNameDisplayAdmin'), currentContributor1Logo, 'noLERMALogo'));
+            document.getElementById('contributor2LogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('contributor2LogoPreview'), document.getElementById('contributor2FileNameDisplayAdmin'), currentContributor2Logo, 'noMEDALogo'));
             
             document.getElementById('logoUploadForm').addEventListener('submit', async (e) => {
                 e.preventDefault(); showLoadingSpinner();
@@ -1161,8 +1140,8 @@
                 let newHeaderLogo = { ...currentHeaderLogo }; let newFooterLogo = { ...currentFooterLogo };
                 try {
                     const siteConfigRef = doc(db, SITE_CONFIG_DOC_PATH);
-                    if (headerFile) { if (currentHeaderLogo.fileName && currentHeaderLogo.url !== DEFAULT_HEADER_LOGO_URL) await deleteFile(currentHeaderLogo.fileName, STORAGE_PATH_LOGOS); newHeaderLogo = await uploadFile(headerFile, STORAGE_PATH_LOGOS); }
-                    if (footerFile) { if (currentFooterLogo.fileName && currentFooterLogo.url !== DEFAULT_FOOTER_LOGO_URL) await deleteFile(currentFooterLogo.fileName, STORAGE_PATH_LOGOS); newFooterLogo = await uploadFile(footerFile, STORAGE_PATH_LOGOS); }
+                    if (headerFile) { if (currentHeaderLogo.fileName) await deleteFile(currentHeaderLogo.fileName, STORAGE_PATH_LOGOS); newHeaderLogo = await uploadFile(headerFile, STORAGE_PATH_LOGOS); }
+                    if (footerFile) { if (currentFooterLogo.fileName) await deleteFile(currentFooterLogo.fileName, STORAGE_PATH_LOGOS); newFooterLogo = await uploadFile(footerFile, STORAGE_PATH_LOGOS); }
                     await setDoc(siteConfigRef, { headerLogoUrl: newHeaderLogo.url, headerLogoFileName: newHeaderLogo.fileName, footerLogoUrl: newFooterLogo.url, footerLogoFileName: newFooterLogo.fileName }, { merge: true });
                     showMessageModal("successMessage", "siteLogosUpdated", "success");
                     document.getElementById('headerLogoUpload').value = ''; document.getElementById('footerLogoUpload').value = '';
@@ -1176,8 +1155,8 @@
                 let newC1Logo = { ...currentContributor1Logo }; let newC2Logo = { ...currentContributor2Logo };
                 try {
                     const siteConfigRef = doc(db, SITE_CONFIG_DOC_PATH);
-                    if (c1File) { if (currentContributor1Logo.fileName && currentContributor1Logo.url !== DEFAULT_CONTRIB1_LOGO_URL) await deleteFile(currentContributor1Logo.fileName, STORAGE_PATH_LOGOS); newC1Logo = await uploadFile(c1File, STORAGE_PATH_LOGOS); }
-                    if (c2File) { if (currentContributor2Logo.fileName && currentContributor2Logo.url !== DEFAULT_CONTRIB2_LOGO_URL) await deleteFile(currentContributor2Logo.fileName, STORAGE_PATH_LOGOS); newC2Logo = await uploadFile(c2File, STORAGE_PATH_LOGOS); }
+                    if (c1File) { if (currentContributor1Logo.fileName) await deleteFile(currentContributor1Logo.fileName, STORAGE_PATH_LOGOS); newC1Logo = await uploadFile(c1File, STORAGE_PATH_LOGOS); }
+                    if (c2File) { if (currentContributor2Logo.fileName) await deleteFile(currentContributor2Logo.fileName, STORAGE_PATH_LOGOS); newC2Logo = await uploadFile(c2File, STORAGE_PATH_LOGOS); }
                     await setDoc(siteConfigRef, { contributor1LogoUrl: newC1Logo.url, contributor1LogoFileName: newC1Logo.fileName, contributor2LogoUrl: newC2Logo.url, contributor2LogoFileName: newC2Logo.fileName }, { merge: true });
                     showMessageModal("successMessage", "contributorLogosUpdated", "success");
                     document.getElementById('contributor1LogoUpload').value = ''; document.getElementById('contributor2LogoUpload').value = '';
