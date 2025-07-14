@@ -310,8 +310,7 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
         console.log("Using appId for Firestore paths:", appId);
 
-        // Default Logo URLs - These are placeholders. Once you upload custom logos via the admin panel,
-        // these will be replaced by the Firebase Storage URLs.
+        // --- START: CORRECTED PATHS AND CONSTANTS ---
         const DEFAULT_HEADER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_header_logo.png?alt=media`; 
         const DEFAULT_FOOTER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_footer_logo.png?alt=media`;
         const DEFAULT_CONTRIB1_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib1_logo.png?alt=media`;
@@ -320,8 +319,10 @@
         const SITE_CONFIGURATION_DOC_ID = 'siteConfiguration';
         const PUBLIC_DATA_BASE_PATH = `artifacts/${appId}/public/data`;
         const ADMIN_MANAGEMENT_COLLECTION_NAME = 'adminManagement';
+        const SITE_MANAGEMENT_COLLECTION_NAME = 'siteManagement'; // This was missing conceptually
         const ADMIN_USERS_DOC_ID = 'adminUsers';
         const ADMIN_USERS_DOC_PATH = `${PUBLIC_DATA_BASE_PATH}/${ADMIN_MANAGEMENT_COLLECTION_NAME}/${ADMIN_USERS_DOC_ID}`;
+        const SITE_CONFIG_DOC_PATH = `${PUBLIC_DATA_BASE_PATH}/${SITE_MANAGEMENT_COLLECTION_NAME}/${SITE_CONFIGURATION_DOC_ID}`;
 
         const PUBLIC_PUB_COLLECTION_NAME = 'publications';
         const PUBLIC_NEWS_COLLECTION_NAME = 'news';
@@ -331,6 +332,7 @@
         const STORAGE_PATH_ABSTRACTS = `${STORAGE_BASE_PATH}/abstracts`;
         const STORAGE_PATH_NEWS_IMAGES = `${STORAGE_BASE_PATH}/news`;
         const STORAGE_PATH_LOGOS = `${STORAGE_BASE_PATH}/logos`;
+        // --- END: CORRECTED PATHS AND CONSTANTS ---
 
         let app, db, auth, storage;
         let editingPublicationId = null;
@@ -555,14 +557,12 @@
                 noTitle: "Nessun Titolo", noAuthors: "Nessun Autore", noYear: "Nessun Anno"
             }
         };
-        // End of Full Translations Object
-
-        // --- Start of JavaScript functions ---
+        // --- COMPLETE SCRIPT WITH ALL FUNCTIONS ---
 
         const views = {};
-        
+
         function applyTranslations(lang) {
-            const elements = document.querySelectorAll('[data-lang-key]');
+             const elements = document.querySelectorAll('[data-lang-key]');
             elements.forEach(element => {
                 const key = element.dataset.langKey;
                 if (translations[lang] && translations[lang][key]) {
@@ -580,11 +580,11 @@
             });
             currentLanguage = lang;
             localStorage.setItem('siteLanguage', lang);
-            // Re-render data with new translations if needed
             if (auth && auth.currentUser && views.adminDashboard && !views.adminDashboard.classList.contains('hidden')) {
-                 listenForAdminPublications(); 
-                 listenForAdminNews();
+                 listenForAdminPublications(); listenForAdminNews();
             }
+            if (views.publicationsList) listenForPublicPublications();
+            if (views.newsFeed) listenForNews();
         }
 
         async function initializeFirebase() {
@@ -603,7 +603,7 @@
         }
 
         let currentView = 'aboutUs';
-
+        
         function showView(viewId) {
             Object.values(views).forEach(view => view && view.classList.add('hidden'));
             const targetView = views[viewId];
@@ -615,13 +615,11 @@
                     document.getElementById('adminManagePublications').classList.remove('hidden');
                     document.getElementById('adminManageNews').classList.add('hidden');
                     document.getElementById('adminManageSiteSettings').classList.add('hidden');
-                    if (typeof resetAddPublicationForm === "function") resetAddPublicationForm();
+                    resetAddPublicationForm();
                 }
             } else {
                 console.warn("View not found:", viewId);
-                if (typeof showMessageModal === "function" && translations[currentLanguage]) { 
-                   showMessageModal("errorMessage", "viewNotFound", "error");
-                }
+                showMessageModal("errorMessage", "viewNotFound", "error");
             }
         }
         
@@ -631,6 +629,7 @@
                 finishAuthUIUpdate(null, false, isAdminViewActive);
                 return;
             }
+
             const adminUserDocRef = doc(db, ADMIN_USERS_DOC_PATH); 
             console.log("updateAuthUI: Checking admin status at path:", ADMIN_USERS_DOC_PATH);
             getDoc(adminUserDocRef).then(docSnap => {
@@ -647,8 +646,9 @@
             console.log(`finishAuthUIUpdate: User: ${user ? user.uid : 'null'}, isClientAdmin: ${isClientSideAdmin}, isAdminViewActive: ${isAdminViewActiveCurrently}, currentView: ${currentView}`);
             document.getElementById('adminLoginBtnFooter').classList.toggle('hidden', isClientSideAdmin);
             document.getElementById('adminLogoutBtn').classList.toggle('hidden', !isClientSideAdmin);
+
             if (isClientSideAdmin) {
-                if (!isAdminViewActiveCurrently) { 
+                if (currentView !== 'adminDashboard') { 
                     showView('adminDashboard');
                 }
             } else { 
@@ -721,8 +721,7 @@
         }
         
         function listenForSiteLogos() {
-            // *** THIS IS THE CORRECTED LINE FOR ERROR #1 ***
-            const docRef = doc(db, PUBLIC_DATA_BASE_PATH, 'siteManagement', SITE_CONFIGURATION_DOC_ID);
+            const docRef = doc(db, SITE_CONFIG_DOC_PATH);
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
@@ -745,7 +744,6 @@
             }, (error) => {
                 console.error("Error listening for site logos:", error);
                 showMessageModal("errorMessage", "couldNotLoadLogos", "error");
-                currentHeaderLogo = { url: DEFAULT_HEADER_LOGO_URL, fileName: '' }; currentFooterLogo = { url: DEFAULT_FOOTER_LOGO_URL, fileName: '' }; currentContributor1Logo = { url: DEFAULT_CONTRIB1_LOGO_URL, fileName: '' }; currentContributor2Logo = { url: DEFAULT_CONTRIB2_LOGO_URL, fileName: '' };
                 updateSiteLogosUI();
             });
         }
@@ -754,6 +752,33 @@
             document.getElementById('mainFooterLogo').src = currentFooterLogo.url;
             document.getElementById('contributor1Logo').src = currentContributor1Logo.url;
             document.getElementById('contributor2Logo').src = currentContributor2Logo.url;
+
+            const adminPreviews = {
+                header: { imgId: 'headerLogoPreview', textId: 'headerLogoFileNameDisplayAdmin', current: currentHeaderLogo, defaultUrl: DEFAULT_HEADER_LOGO_URL, noMsgKey: 'noCustomHeaderLogo' },
+                footer: { imgId: 'footerLogoPreview', textId: 'footerLogoFileNameDisplayAdmin', current: currentFooterLogo, defaultUrl: DEFAULT_FOOTER_LOGO_URL, noMsgKey: 'noCustomFooterLogo' },
+                contributor1: { imgId: 'contributor1LogoPreview', textId: 'contributor1FileNameDisplayAdmin', current: currentContributor1Logo, defaultUrl: DEFAULT_CONTRIB1_LOGO_URL, noMsgKey: 'noLERMALogo' },
+                contributor2: { imgId: 'contributor2LogoPreview', textId: 'contributor2FileNameDisplayAdmin', current: currentContributor2Logo, defaultUrl: DEFAULT_CONTRIB2_LOGO_URL, noMsgKey: 'noMEDALogo' }
+            };
+            for (const key in adminPreviews) {
+                const { imgId, textId, current, defaultUrl, noMsgKey } = adminPreviews[key];
+                const imgEl = document.getElementById(imgId); const textEl = document.getElementById(textId);
+                if (imgEl && textEl) {
+                    imgEl.src = current.url || defaultUrl; 
+                    imgEl.style.display = (current.url && current.fileName) ? 'block' : 'none'; 
+                    textEl.textContent = current.fileName ? `${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(current.fileName)}` : translations[currentLanguage][noMsgKey];
+                }
+            }
+        }
+        function loadSiteLogosForAdmin() { updateSiteLogosUI(); }
+        function handleLogoFileInput(inputElement, previewImgElement, fileNameDisplayElement, currentLogoState, defaultUrl, noMsgKey) {
+            const file = inputElement.files[0];
+            if (file) {
+                fileNameDisplayElement.textContent = `${translations[currentLanguage].selectedLabel}: ${file.name}`;
+                if (previewImgElement) { const reader = new FileReader(); reader.onload = (event) => { previewImgElement.src = event.target.result; previewImgElement.style.display = 'block'; }; reader.readAsDataURL(file); }
+            } else {
+                fileNameDisplayElement.textContent = currentLogoState.fileName ? `${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentLogoState.fileName)}` : translations[currentLanguage][noMsgKey];
+                if (previewImgElement) { previewImgElement.src = currentLogoState.url || defaultUrl; previewImgElement.style.display = (currentLogoState.url && currentLogoState.fileName) ? 'block' : 'none'; }
+            }
         }
 
         function listenForPublicPublications() {
@@ -809,7 +834,7 @@
             });
             document.querySelectorAll('.view-publication-details').forEach(btn => btn.addEventListener('click', async (e) => { const bookId = e.target.dataset.id; const docRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, bookId); const docSnap = await getDoc(docRef); if (docSnap.exists()) showPublicationDetailsModal(docSnap.data()); else showMessageModal("errorMessage", "pubDetailsNotFound", "error"); }));
         }
-
+        
         function listenForAdminPublications() {
             const pubCollRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME); const q = query(pubCollRef, orderBy("timestamp", "desc"));
             onSnapshot(q, (snapshot) => {
@@ -824,9 +849,211 @@
             }, (error) => { console.error("Error admin publications:", error); document.getElementById('adminPublicationsList').innerHTML = `<tr class="admin-table-row"><td colspan="4" class="px-6 py-4 text-red-500">${translations[currentLanguage]?.errorLoadingAdminPublications||'Error loading.'}</td></tr>`;});
         }
         
-        // Other functions (modals, forms, etc.) remain unchanged. They are included for completeness.
-        // ... all remaining javascript functions from the original file ...
+        function resetAddPublicationForm() {
+            document.getElementById('addPublicationForm').reset(); editingPublicationId = null;
+            document.getElementById('adminFormTitle').textContent = translations[currentLanguage]?.addPublicationTitle || 'Add Publication';
+            document.getElementById('submitPublicationBtn').textContent = translations[currentLanguage]?.addPublicationButton || 'Add';
+            document.getElementById('cancelEditPublicationBtn').classList.add('hidden');
+            document.getElementById('uploadedCoverPreviewAdmin').src = ''; document.getElementById('uploadedCoverPreviewAdmin').style.display = 'none';
+            document.getElementById('coverImageFileNameDisplayAdmin').textContent = ''; document.getElementById('pdfFileNameDisplayAdmin').textContent = '';
+            document.getElementById('abstractArPdfFileNameDisplayAdmin').textContent = ''; document.getElementById('abstractEnPdfFileNameDisplayAdmin').textContent = ''; document.getElementById('abstractItPdfFileNameDisplayAdmin').textContent = '';
+            currentPubFiles = {coverUrl:'',coverFileName:'',pdfUrl:'',pdfFileName:'',abstracts:{ar:{text:'',url:'',fileName:''},en:{text:'',url:'',fileName:''},it:{text:'',url:'',fileName:''}}};
+        }
+        
+        async function editPublication(pubId) {
+            showLoadingSpinner(); 
+            try {
+                const docRef = doc(db, PUBLIC_DATA_BASE_PATH, PUBLIC_PUB_COLLECTION_NAME, pubId); 
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const d = docSnap.data(); 
+                    editingPublicationId = pubId;
+                    document.getElementById('bookTitle').value=d.title||'';
+                    document.getElementById('bookAuthors').value=d.authors||'';
+                    document.getElementById('bookYear').value=d.year!=null?d.year:'';
+                    document.getElementById('bookDescription').value=d.description||'';
+                    document.getElementById('bookISBN').value=d.isbn||'';
+                    document.getElementById('bookISSN').value=d.issn||'';
+                    document.getElementById('abstractArText').value=d.abstracts?.ar?.text||'';
+                    document.getElementById('abstractEnText').value=d.abstracts?.en?.text||'';
+                    document.getElementById('abstractItText').value=d.abstracts?.it?.text||'';
+                    document.getElementById('bookIsCurrentIssue').checked=d.isCurrentIssue||false;
+                    
+                    currentPubFiles={coverUrl:d.coverImageUrl||'',coverImageFileName:d.coverImageFileName||'',pdfUrl:d.pdfUrl||'',pdfFileName:d.pdfFileName||'',abstracts:{ar:d.abstracts?.ar||{text:'',url:'',fileName:''},en:d.abstracts?.en||{text:'',url:'',fileName:''},it:d.abstracts?.it||{text:'',url:'',fileName:''}}};
+                    
+                    document.getElementById('uploadedCoverPreviewAdmin').src=currentPubFiles.coverUrl; 
+                    document.getElementById('uploadedCoverPreviewAdmin').style.display=currentPubFiles.coverUrl?'block':'none';
+                    document.getElementById('coverImageFileNameDisplayAdmin').textContent=currentPubFiles.coverImageFileName?`${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentPubFiles.coverImageFileName)}`:'';
+                    document.getElementById('pdfFileNameDisplayAdmin').textContent=currentPubFiles.pdfFileName?`${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentPubFiles.pdfFileName)}`:'';
+                    document.getElementById('abstractArPdfFileNameDisplayAdmin').textContent=currentPubFiles.abstracts.ar.fileName?`${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentPubFiles.abstracts.ar.fileName)}`:'';
+                    document.getElementById('abstractEnPdfFileNameDisplayAdmin').textContent=currentPubFiles.abstracts.en.fileName?`${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentPubFiles.abstracts.en.fileName)}`:'';
+                    document.getElementById('abstractItPdfFileNameDisplayAdmin').textContent=currentPubFiles.abstracts.it.fileName?`${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentPubFiles.abstracts.it.fileName)}`:'';
 
+                    document.getElementById('bookCover').value=''; document.getElementById('bookPdf').value=''; document.getElementById('abstractArPdf').value=''; document.getElementById('abstractEnPdf').value=''; document.getElementById('abstractItPdf').value='';
+                    
+                    document.getElementById('adminFormTitle').textContent=translations[currentLanguage].updatePublicationButton; 
+                    document.getElementById('submitPublicationBtn').textContent=translations[currentLanguage].updatePublicationButton; 
+                    document.getElementById('cancelEditPublicationBtn').classList.remove('hidden');
+                    window.scrollTo({top:0,behavior:'smooth'});
+                } else {
+                    showMessageModal("errorMessage","publicationNotFoundForEdit","error");
+                }
+            } catch(e) {
+                console.error("Edit pub error:",e);
+                showMessageModal("errorMessage","errorLoadingPublicationForEdit"+e.message,"error");
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+        function confirmDeletePublication(pubId) {
+            showMessageModal("confirmDelete","confirmDeleteMsg","confirm", async (confirmed) => {
+                if(confirmed){ 
+                    showLoadingSpinner(); 
+                    try {
+                        const docRef=doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME,pubId); 
+                        const docSnap=await getDoc(docRef);
+                        if(docSnap.exists()){ 
+                            const d=docSnap.data();
+                            if(d.coverImageFileName) await deleteFile(d.coverImageFileName,STORAGE_PATH_COVERS); 
+                            if(d.pdfFileName) await deleteFile(d.pdfFileName,STORAGE_PATH_PDFS);
+                            if(d.abstracts?.ar?.fileName) await deleteFile(d.abstracts.ar.fileName,STORAGE_PATH_ABSTRACTS); 
+                            if(d.abstracts?.en?.fileName) await deleteFile(d.abstracts.en.fileName,STORAGE_PATH_ABSTRACTS); 
+                            if(d.abstracts?.it?.fileName) await deleteFile(d.abstracts.it.fileName,STORAGE_PATH_ABSTRACTS);
+                            await deleteDoc(docRef); 
+                            showMessageModal("successMessage","publicationDeleted","success");
+                        } else {
+                            showMessageModal("errorMessage","publicationNotFoundForDeletion","error");
+                        }
+                    } catch(e) {
+                        console.error("Del pub error:",e);
+                        showMessageModal("errorMessage","errorDeletingPublication"+e.message,"error");
+                    } finally {
+                        hideLoadingSpinner();
+                    } 
+                }
+            });
+        }
+        
+        function resetAddNewsItemForm() {
+            document.getElementById('addNewsItemForm').reset();
+            document.getElementById('newsTitle').value='';
+            document.getElementById('newsDescription').value='';
+            document.getElementById('newsImage').value='';
+            document.getElementById('uploadedNewsImagePreviewAdmin').src='';
+            document.getElementById('uploadedNewsImagePreviewAdmin').style.display='none';
+            document.getElementById('newsImageFileNameDisplayAdmin').textContent='';
+            currentNewsImage={url:'',fileName:''}; 
+            editingNewsItemId=null; 
+            document.getElementById('submitNewsBtn').textContent=translations[currentLanguage]?.addNewsItemButton||'Add News'; 
+            document.getElementById('cancelEditNewsBtn').classList.add('hidden');
+        }
+        
+        async function editNewsItem(newsId){
+            showLoadingSpinner(); 
+            try{
+                const docRef=doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_NEWS_COLLECTION_NAME,newsId); 
+                const docSnap=await getDoc(docRef);
+                if(docSnap.exists()){ 
+                    const d=docSnap.data(); 
+                    editingNewsItemId=newsId;
+                    document.getElementById('newsTitle').value=d.title||''; 
+                    document.getElementById('newsDescription').value=d.description||'';
+                    currentNewsImage={url:d.imageUrl||'',fileName:d.imageFileName||''};
+                    document.getElementById('newsImageFileNameDisplayAdmin').textContent=currentNewsImage.fileName?`${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentNewsImage.fileName)}`:'';
+                    document.getElementById('uploadedNewsImagePreviewAdmin').src=currentNewsImage.url; 
+                    document.getElementById('uploadedNewsImagePreviewAdmin').style.display=currentNewsImage.url?'block':'none';
+                    document.getElementById('newsImage').value=''; 
+                    document.getElementById('submitNewsBtn').textContent=translations[currentLanguage].updateNewsItemButton; 
+                    document.getElementById('cancelEditNewsBtn').classList.remove('hidden');
+                    window.scrollTo({top:0,behavior:'smooth'});
+                }else {
+                    showMessageModal("errorMessage","newsItemNotFoundForEdit","error");
+                }
+            }catch(e){
+                console.error("Edit news err:",e);
+                showMessageModal("errorMessage","errorLoadingNewsItemForEdit"+e.message,"error");
+            } finally {
+                hideLoadingSpinner();
+            }
+        }
+        
+        function confirmDeleteNewsItem(newsId){
+            showMessageModal("confirmDelete","confirmDeleteMsg","confirm",async(confirmed)=>{
+                if(confirmed){
+                    showLoadingSpinner();
+                    try{
+                        const newsRef=doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_NEWS_COLLECTION_NAME,newsId); 
+                        const newsDoc=await getDoc(newsRef);
+                        if(newsDoc.exists()){ 
+                            const d=newsDoc.data(); 
+                            if(d.imageFileName) await deleteFile(d.imageFileName,STORAGE_PATH_NEWS_IMAGES); 
+                            await deleteDoc(newsRef); 
+                            showMessageModal("successMessage","newsItemDeleted","success");
+                        } else {
+                            showMessageModal("errorMessage","newsItemNotFoundForDeletion","error");
+                        }
+                    }catch(e){
+                        console.error("Del news err:",e);
+                        showMessageModal("errorMessage","errorDeletingNewsItem"+e.message,"error");
+                    } finally{
+                        hideLoadingSpinner();
+                    }
+                }
+            });
+        }
+        function listenForAdminNews() {
+            const newsCollRef = collection(db, PUBLIC_DATA_BASE_PATH, PUBLIC_NEWS_COLLECTION_NAME); 
+            const q = query(newsCollRef, orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const listBody = document.getElementById('adminNewsList'); 
+                listBody.innerHTML = '';
+                const noNewsMsg = `<tr class="admin-table-row"><td colspan="3" class="px-6 py-4" data-lang-key="noNewsToManage">${translations[currentLanguage]?.noNewsToManage||'No news.'}</td></tr>`;
+                if (snapshot.empty) { listBody.innerHTML = noNewsMsg; return; }
+                snapshot.forEach(d => {
+                    const news = { id: d.id, ...d.data() }; 
+                    const row = listBody.insertRow(); 
+                    row.className = 'admin-table-row';
+                    row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap text-sm">${news.title||translations[currentLanguage]?.noTitle||'No Title'}</td><td class="px-6 py-4 whitespace-nowrap text-sm">${new Date(news.timestamp).toLocaleDateString(currentLanguage==='it'?'it-IT':'en-US')}</td><td class="px-6 py-4 whitespace-nowrap text-right text-sm flex space-x-2"><button class="text-blue-600 hover:text-blue-800 edit-news-button admin-button text-xs p-2" data-id="${news.id}" data-lang-key="editButton">${translations[currentLanguage]?.editButton||'Edit'}</button><button class="text-red-600 hover:text-red-800 delete-news-button admin-button text-xs p-2" data-id="${news.id}" data-lang-key="deleteButton">${translations[currentLanguage]?.deleteButton||'Delete'}</button></td>`;
+                });
+                document.querySelectorAll('.edit-news-button').forEach(btn => btn.addEventListener('click', (e) => editNewsItem(e.target.dataset.id)));
+                document.querySelectorAll('.delete-news-button').forEach(btn => btn.addEventListener('click', (e) => confirmDeleteNewsItem(e.target.dataset.id)));
+            }, (error) => { console.error("Error admin news:", error); document.getElementById('adminNewsList').innerHTML = `<tr class="admin-table-row"><td colspan="3" class="px-6 py-4 text-red-500">${translations[currentLanguage]?.errorLoadingAdminNews||'Error.'}</td></tr>`;});
+        }
+        
+        function showMessageModal(titleKey, messageKey, type = "alert", callback = null) {
+            const messageModalElement = document.getElementById('messageModal');
+            const messageTextElement = document.getElementById('messageText');
+            const modalButtonsElement = document.getElementById('modalButtons');
+            messageTextElement.innerHTML = `<strong>${translations[currentLanguage]?.[titleKey] || titleKey}</strong><br>${translations[currentLanguage]?.[messageKey] || messageKey}`;
+            modalButtonsElement.innerHTML = '';
+            if (type === "confirm") {
+                const yesBtn = document.createElement('button'); yesBtn.textContent=translations[currentLanguage]?.yesButton||'Yes'; yesBtn.className='nav-button bg-red-600'; yesBtn.onclick=()=>{messageModalElement.classList.remove('flex');messageModalElement.classList.add('hidden');if(callback)callback(true);}; modalButtonsElement.appendChild(yesBtn);
+                const noBtn = document.createElement('button'); noBtn.textContent=translations[currentLanguage]?.noButton||'No'; noBtn.className='nav-button bg-gray-500'; noBtn.onclick=()=>{messageModalElement.classList.remove('flex');messageModalElement.classList.add('hidden');if(callback)callback(false);}; modalButtonsElement.appendChild(noBtn);
+            } else {
+                const okBtn = document.createElement('button'); okBtn.textContent=translations[currentLanguage]?.okButton||'OK'; okBtn.className='nav-button bg-blue-600'; okBtn.onclick=()=>{messageModalElement.classList.remove('flex');messageModalElement.classList.add('hidden');if(callback)callback();}; modalButtonsElement.appendChild(okBtn);
+            }
+            messageModalElement.classList.remove('hidden'); messageModalElement.classList.add('flex');
+        }
+        
+        function showPublicationDetailsModal(book) {
+            const publicationDetailsModal = document.getElementById('publicationDetailsModal');
+            document.getElementById('detailCoverImage').src = book.coverImageUrl || 'https://placehold.co/400x600/cccccc/333333?text=No+Image';
+            document.getElementById('detailTitle').textContent = book.title || translations[currentLanguage]?.noTitle||'No Title';
+            document.getElementById('detailAuthors').textContent = book.authors || translations[currentLanguage]?.noAuthors||'No Authors';
+            document.getElementById('detailYear').textContent = book.year || translations[currentLanguage]?.noYear||'No Year';
+            document.getElementById('detailDescription').textContent = book.description || translations[currentLanguage]?.noDescription||'No Description';
+            document.getElementById('detailISBN').textContent = book.isbn || 'N/A'; document.getElementById('detailISSN').textContent = book.issn || 'N/A';
+            document.getElementById('detailAbstractArText').textContent = book.abstracts?.ar?.text || translations[currentLanguage]?.noArabicAbstract||'N/A';
+            document.getElementById('detailAbstractEnText').textContent = book.abstracts?.en?.text || translations[currentLanguage]?.noEnglishAbstract||'N/A';
+            document.getElementById('detailAbstractItText').textContent = book.abstracts?.it?.text || translations[currentLanguage]?.noItalianAbstract||'N/A';
+            const updateDownloadLink = (id, url, key) => { const link=document.getElementById(id); link.href=url||'#'; link.classList.toggle('disabled',!url); link.onclick=url?null:(e)=>{e.preventDefault();showMessageModal("unavailable",key,"alert");};};
+            updateDownloadLink('detailDownloadPdfBtn', book.pdfUrl, 'fullPdfUnavailable'); updateDownloadLink('detailDownloadAbstractArBtn', book.abstracts?.ar?.url, 'arabicAbstractPdfUnavailable'); updateDownloadLink('detailDownloadAbstractEnBtn', book.abstracts?.en?.url, 'englishAbstractPdfUnavailable'); updateDownloadLink('detailDownloadAbstractItBtn', book.abstracts?.it?.url, 'italianAbstractPdfUnavailable');
+            publicationDetailsModal.classList.remove('hidden'); publicationDetailsModal.classList.add('flex');
+        }
+        
+        function showLoadingSpinner() { document.getElementById('loadingSpinner').classList.remove('hidden'); }
+        function hideLoadingSpinner() { document.getElementById('loadingSpinner').classList.add('hidden'); }
+        
         // --- Main Execution ---
         window.onload = function() {
             views.aboutUs = document.getElementById('aboutUsView');
@@ -847,11 +1074,13 @@
             document.querySelectorAll('.lang-button').forEach(button => {button.addEventListener('click', (e) => applyTranslations(e.target.dataset.lang));});
             document.getElementById('adminLoginBtnFooter').addEventListener('click', () => showView('adminLogin'));
             document.getElementById('adminLogoutBtn').addEventListener('click', async () => { try { await signOut(auth); showMessageModal("successMessage", "logoutSuccessful", "success"); } catch (error) { console.error("Error logging out:", error); showMessageModal("errorMessage", "logoutFailed" + error.message, "error"); }});
-            document.getElementById('managePublicationsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.remove('hidden'); document.getElementById('adminManageNews').classList.add('hidden'); document.getElementById('adminManageSiteSettings').classList.add('hidden'); if(typeof resetAddPublicationForm === "function") resetAddPublicationForm(); if(auth && auth.currentUser) listenForAdminPublications(); });
-            document.getElementById('manageNewsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.add('hidden'); document.getElementById('adminManageNews').classList.remove('hidden'); document.getElementById('adminManageSiteSettings').classList.add('hidden'); if(typeof resetAddNewsItemForm === "function") resetAddNewsItemForm(); if(auth && auth.currentUser) listenForAdminNews(); });
-            document.getElementById('manageSiteSettingsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.add('hidden'); document.getElementById('adminManageNews').classList.add('hidden'); document.getElementById('adminManageSiteSettings').classList.remove('hidden');});
+            document.getElementById('managePublicationsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.remove('hidden'); document.getElementById('adminManageNews').classList.add('hidden'); document.getElementById('adminManageSiteSettings').classList.add('hidden'); resetAddPublicationForm(); if(auth && auth.currentUser) listenForAdminPublications(); });
+            document.getElementById('manageNewsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.add('hidden'); document.getElementById('adminManageNews').classList.remove('hidden'); document.getElementById('adminManageSiteSettings').classList.add('hidden'); resetAddNewsItemForm(); if(auth && auth.currentUser) listenForAdminNews(); });
+            document.getElementById('manageSiteSettingsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.add('hidden'); document.getElementById('adminManageNews').classList.add('hidden'); document.getElementById('adminManageSiteSettings').classList.remove('hidden'); loadSiteLogosForAdmin(); });
+            
             document.getElementById('publicationSearch').addEventListener('input', () => listenForPublicPublications());
             document.getElementById('sortPublications').addEventListener('change', () => listenForPublicPublications());
+
             document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
                 e.preventDefault(); showLoadingSpinner();
                 const email = document.getElementById('adminEmail').value; const password = document.getElementById('adminPassword').value; 
@@ -863,6 +1092,107 @@
                     loginErrorMessage.textContent = translations[currentLanguage].invalidCredentials || "Invalid credentials.";
                 } finally { hideLoadingSpinner(); }
             });
+
+            document.getElementById('addPublicationForm').addEventListener('submit', async (e) => {
+                e.preventDefault(); showLoadingSpinner();
+                if (!auth.currentUser) { showMessageModal("permissionDenied", "noPermissionAddEditPublications", "error"); hideLoadingSpinner(); return; }
+                const title = document.getElementById('bookTitle').value.trim(), authors = document.getElementById('bookAuthors').value.trim(), year = document.getElementById('bookYear').value ? parseInt(document.getElementById('bookYear').value,10) : null, description = document.getElementById('bookDescription').value.trim(), isbn = document.getElementById('bookISBN').value.trim(), issn = document.getElementById('bookISSN').value.trim(), abstractArText = document.getElementById('abstractArText').value.trim(), abstractEnText = document.getElementById('abstractEnText').value.trim(), abstractItText = document.getElementById('abstractItText').value.trim(), isCurrentIssue = document.getElementById('bookIsCurrentIssue').checked;
+                try {
+                    const uploadAndUpdate = async (input, currentFile, path) => { let newUrl = currentFile.url, newName = currentFile.fileName; if (input.files[0]) { if (currentFile.fileName) await deleteFile(currentFile.fileName, path); const res = await uploadFile(input.files[0], path); newUrl = res.url; newName = res.fileName;} return { url: newUrl, fileName: newName }; };
+                    const coverRes = await uploadAndUpdate(document.getElementById('bookCover'), {url: currentPubFiles.coverUrl, fileName: currentPubFiles.coverImageFileName}, STORAGE_PATH_COVERS);
+                    const pdfRes = await uploadAndUpdate(document.getElementById('bookPdf'), {url: currentPubFiles.pdfUrl, fileName: currentPubFiles.pdfFileName}, STORAGE_PATH_PDFS);
+                    const absArRes = await uploadAndUpdate(document.getElementById('abstractArPdf'), {url: currentPubFiles.abstracts.ar.url, fileName: currentPubFiles.abstracts.ar.fileName}, STORAGE_PATH_ABSTRACTS);
+                    const absEnRes = await uploadAndUpdate(document.getElementById('abstractEnPdf'), {url: currentPubFiles.abstracts.en.url, fileName: currentPubFiles.abstracts.en.fileName}, STORAGE_PATH_ABSTRACTS);
+                    const absItRes = await uploadAndUpdate(document.getElementById('abstractItPdf'), {url: currentPubFiles.abstracts.it.url, fileName: currentPubFiles.abstracts.it.fileName}, STORAGE_PATH_ABSTRACTS);
+                    const pubData = { title, authors, year, description, isbn, issn, abstracts: {ar:{text:abstractArText,url:absArRes.url,fileName:absArRes.fileName},en:{text:abstractEnText,url:absEnRes.url,fileName:absEnRes.fileName},it:{text:abstractItText,url:absItRes.url,fileName:absItRes.fileName}}, coverImageUrl:coverRes.url,coverImageFileName:coverRes.fileName,pdfUrl:pdfRes.url,pdfFileName:pdfRes.fileName, isCurrentIssue, timestamp:new Date().toISOString()};
+                    if (isCurrentIssue) { const q = query(collection(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME),where("isCurrentIssue","==",true)); const snap = await getDocs(q); for(const d of snap.docs) if(d.id!==editingPublicationId) await updateDoc(doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME,d.id),{isCurrentIssue:false});}
+                    if (editingPublicationId) { await updateDoc(doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME,editingPublicationId),pubData); showMessageModal("successMessage","publicationUpdated","success");}
+                    else { await addDoc(collection(db,PUBLIC_DATA_BASE_PATH,PUBLIC_PUB_COLLECTION_NAME),pubData); showMessageModal("successMessage","publicationAdded","success");}
+                    resetAddPublicationForm();
+                } catch (error) { console.error("Error saving pub:", error); showMessageModal("errorMessage","errorSavingPublication"+error.message,"error");
+                } finally { hideLoadingSpinner(); }
+            });
+
+            document.getElementById('cancelEditPublicationBtn').addEventListener('click', resetAddPublicationForm);
+
+            document.getElementById('addNewsItemForm').addEventListener('submit', async (e) => {
+                e.preventDefault(); showLoadingSpinner();
+                if(!auth.currentUser){showMessageModal("permissionDenied","noPermissionAddNews","error");hideLoadingSpinner();return;}
+                const title=document.getElementById('newsTitle').value.trim(), description=document.getElementById('newsDescription').value.trim();
+                let imageUrl=currentNewsImage.url, imageFileName=currentNewsImage.fileName;
+                try {
+                    const newsImageInput = document.getElementById('newsImage');
+                    if(newsImageInput.files[0]){ if(currentNewsImage.fileName) await deleteFile(currentNewsImage.fileName,STORAGE_PATH_NEWS_IMAGES); const res=await uploadFile(newsImageInput.files[0],STORAGE_PATH_NEWS_IMAGES); imageUrl=res.url; imageFileName=res.fileName;
+                    } else if (!newsImageInput.files[0] && editingNewsItemId && !currentNewsImage.url) {
+                        if(currentNewsImage.fileName) await deleteFile(currentNewsImage.fileName, STORAGE_PATH_NEWS_IMAGES);
+                        imageUrl = ''; imageFileName = '';
+                    }
+                    const newsData={title,description,imageUrl,imageFileName,timestamp:new Date().toISOString()};
+                    if(editingNewsItemId){await updateDoc(doc(db,PUBLIC_DATA_BASE_PATH,PUBLIC_NEWS_COLLECTION_NAME,editingNewsItemId),newsData); showMessageModal("successMessage","newsItemUpdated","success");}
+                    else{await addDoc(collection(db,PUBLIC_DATA_BASE_PATH,PUBLIC_NEWS_COLLECTION_NAME),newsData); showMessageModal("successMessage","newsItemAdded","success");}
+                    resetAddNewsItemForm();
+                }catch(err){console.error("Save news err:",err);showMessageModal("errorMessage","errorSavingNewsItem"+err.message,"error");}
+                finally{hideLoadingSpinner();}
+            });
+            
+            document.getElementById('newsImage').addEventListener('change', (e) => {
+                const file=e.target.files[0];
+                if(file){ 
+                    document.getElementById('newsImageFileNameDisplayAdmin').textContent=`${translations[currentLanguage].selectedLabel}: ${file.name}`; 
+                    const r=new FileReader();r.onload=(ev)=>{document.getElementById('uploadedNewsImagePreviewAdmin').src=ev.target.result;document.getElementById('uploadedNewsImagePreviewAdmin').style.display='block';};r.readAsDataURL(file);
+                } else { 
+                    document.getElementById('newsImageFileNameDisplayAdmin').textContent=currentNewsImage.fileName?`${translations[currentLanguage].currentLabel}: ${getOriginalFileNameFromUnique(currentNewsImage.fileName)}`:''; 
+                    document.getElementById('uploadedNewsImagePreviewAdmin').src=currentNewsImage.url; 
+                    document.getElementById('uploadedNewsImagePreviewAdmin').style.display=currentNewsImage.url?'block':'none';
+                }
+            });
+            
+            document.getElementById('cancelEditNewsBtn').addEventListener('click', resetAddNewsItemForm);
+
+            document.getElementById('headerLogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('headerLogoPreview'), document.getElementById('headerLogoFileNameDisplayAdmin'), currentHeaderLogo, DEFAULT_HEADER_LOGO_URL, 'noCustomHeaderLogo'));
+            document.getElementById('footerLogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('footerLogoPreview'), document.getElementById('footerLogoFileNameDisplayAdmin'), currentFooterLogo, DEFAULT_FOOTER_LOGO_URL, 'noCustomFooterLogo'));
+            document.getElementById('contributor1LogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('contributor1LogoPreview'), document.getElementById('contributor1FileNameDisplayAdmin'), currentContributor1Logo, DEFAULT_CONTRIB1_LOGO_URL, 'noLERMALogo'));
+            document.getElementById('contributor2LogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('contributor2LogoPreview'), document.getElementById('contributor2FileNameDisplayAdmin'), currentContributor2Logo, DEFAULT_CONTRIB2_LOGO_URL, 'noMEDALogo'));
+            
+            document.getElementById('logoUploadForm').addEventListener('submit', async (e) => {
+                e.preventDefault(); showLoadingSpinner();
+                if (!auth.currentUser) { showMessageModal("permissionDenied", "noPermissionUpdateSiteSettings", "error"); hideLoadingSpinner(); return; }
+                const headerFile = document.getElementById('headerLogoUpload').files[0]; const footerFile = document.getElementById('footerLogoUpload').files[0];
+                let newHeaderLogo = { ...currentHeaderLogo }; let newFooterLogo = { ...currentFooterLogo };
+                try {
+                    const siteConfigRef = doc(db, SITE_CONFIG_DOC_PATH);
+                    if (headerFile) { if (currentHeaderLogo.fileName && currentHeaderLogo.url !== DEFAULT_HEADER_LOGO_URL) await deleteFile(currentHeaderLogo.fileName, STORAGE_PATH_LOGOS); newHeaderLogo = await uploadFile(headerFile, STORAGE_PATH_LOGOS); }
+                    if (footerFile) { if (currentFooterLogo.fileName && currentFooterLogo.url !== DEFAULT_FOOTER_LOGO_URL) await deleteFile(currentFooterLogo.fileName, STORAGE_PATH_LOGOS); newFooterLogo = await uploadFile(footerFile, STORAGE_PATH_LOGOS); }
+                    await setDoc(siteConfigRef, { headerLogoUrl: newHeaderLogo.url, headerLogoFileName: newHeaderLogo.fileName, footerLogoUrl: newFooterLogo.url, footerLogoFileName: newFooterLogo.fileName }, { merge: true });
+                    showMessageModal("successMessage", "siteLogosUpdated", "success");
+                    document.getElementById('headerLogoUpload').value = ''; document.getElementById('footerLogoUpload').value = '';
+                } catch (error) { console.error("Error updating site logos:", error); showMessageModal("errorMessage", "errorUpdatingLogos" + error.message, "error"); } finally { hideLoadingSpinner(); }
+            });
+            
+            document.getElementById('contributorLogoUploadForm').addEventListener('submit', async (e) => {
+                e.preventDefault(); showLoadingSpinner();
+                if (!auth.currentUser) { showMessageModal("permissionDenied", "noPermissionUpdateSiteSettings", "error"); hideLoadingSpinner(); return; }
+                const c1File = document.getElementById('contributor1LogoUpload').files[0]; const c2File = document.getElementById('contributor2LogoUpload').files[0];
+                let newC1Logo = { ...currentContributor1Logo }; let newC2Logo = { ...currentContributor2Logo };
+                try {
+                    const siteConfigRef = doc(db, SITE_CONFIG_DOC_PATH);
+                    if (c1File) { if (currentContributor1Logo.fileName && currentContributor1Logo.url !== DEFAULT_CONTRIB1_LOGO_URL) await deleteFile(currentContributor1Logo.fileName, STORAGE_PATH_LOGOS); newC1Logo = await uploadFile(c1File, STORAGE_PATH_LOGOS); }
+                    if (c2File) { if (currentContributor2Logo.fileName && currentContributor2Logo.url !== DEFAULT_CONTRIB2_LOGO_URL) await deleteFile(currentContributor2Logo.fileName, STORAGE_PATH_LOGOS); newC2Logo = await uploadFile(c2File, STORAGE_PATH_LOGOS); }
+                    await setDoc(siteConfigRef, { contributor1LogoUrl: newC1Logo.url, contributor1LogoFileName: newC1Logo.fileName, contributor2LogoUrl: newC2Logo.url, contributor2LogoFileName: newC2Logo.fileName }, { merge: true });
+                    showMessageModal("successMessage", "contributorLogosUpdated", "success");
+                    document.getElementById('contributor1LogoUpload').value = ''; document.getElementById('contributor2LogoUpload').value = '';
+                } catch (error) { console.error("Error updating contributor logos:", error); showMessageModal("errorMessage", "errorUpdatingContributorLogos" + error.message, "error"); } finally { hideLoadingSpinner(); }
+            });
+            
+            const closeMessageModalElement = document.getElementById('closeMessageModal');
+            const messageModalElement = document.getElementById('messageModal');
+            closeMessageModalElement.addEventListener('click', () => { messageModalElement.classList.remove('flex'); messageModalElement.classList.add('hidden'); });
+            messageModalElement.addEventListener('click', (e) => { if (e.target === messageModalElement) { messageModalElement.classList.remove('flex'); messageModalElement.classList.add('hidden'); }});
+            
+            const publicationDetailsModal = document.getElementById('publicationDetailsModal');
+            const closePublicationDetailsModal = document.getElementById('closePublicationDetailsModal');
+            closePublicationDetailsModal.addEventListener('click', () => {publicationDetailsModal.classList.remove('flex'); publicationDetailsModal.classList.add('hidden');});
+            publicationDetailsModal.addEventListener('click', (e) => { if (e.target === publicationDetailsModal) {publicationDetailsModal.classList.remove('flex'); publicationDetailsModal.classList.add('hidden');}});
         };
     </script>
 </body>
