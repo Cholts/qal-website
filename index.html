@@ -72,7 +72,7 @@
     <!-- Modals -->
     <div id="messageModal" class="modal">
         <div class="modal-content">
-            <span class="modal-close-button" id="closeMessageModal">×</span>
+            <span class="modal-close-button" id="closeMessageModal">&times;</span>
             <p id="messageText" class="text-lg text-gray-800 mb-4"></p>
             <div id="modalButtons" class="modal-buttons flex justify-center gap-4"></div>
         </div>
@@ -80,7 +80,7 @@
 
     <div id="publicationDetailsModal" class="modal">
         <div class="modal-content">
-            <span class="modal-close-button" id="closePublicationDetailsModal">×</span>
+            <span class="modal-close-button" id="closePublicationDetailsModal">&times;</span>
             <img id="detailCoverImage" src="https://placehold.co/400x600/cccccc/333333?text=No+Image" alt="Publication Cover" class="w-full max-w-[200px] h-auto object-cover mx-auto mb-4 rounded-md shadow-md">
             <h3 id="detailTitle" class="text-2xl font-bold text-gray-800 mb-2"></h3>
             <p id="detailAuthors" class="text-gray-600 text-lg mb-1"></p>
@@ -282,7 +282,7 @@
 
     <footer class="footer-bg py-6 mt-8 shadow-inner">
         <div class="container flex flex-col md:flex-row items-center justify-between text-sm">
-            <div class="flex items-center space-x-4 mb-4 md:mb-0"><img id="mainFooterLogo" src="" alt="Quaderni di Archeologia della Libya Logo" class="footer-logo"><p>© <span id="currentYear"></span> <span data-lang-key="copyrightText"></span></p></div>
+            <div class="flex items-center space-x-4 mb-4 md:mb-0"><img id="mainFooterLogo" src="" alt="Quaderni di Archeologia della Libya Logo" class="footer-logo"><p>&copy; <span id="currentYear"></span> <span data-lang-key="copyrightText"></span></p></div>
             <div class="text-center md:text-left space-y-1 mb-4 md:mb-0"><p class="font-bold" data-lang-key="contactUsLabel"></p><p data-lang-key="emailAddress"><span data-lang-key="emailLabelShort"></span> <a href="mailto:info@archaeologylibya.org" class="footer-link">info@archaeologylibya.org</a></p><p data-lang-key="phoneNumber"><span data-lang-key="phoneLabelShort"></span> +39 06 6874127</p></div>
             <div class="text-center md:text-right space-y-2"><p class="font-bold" data-lang-key="contributorsLabel"></p><div class="flex justify-center md:justify-end items-center gap-4"><div id="contributor1LogoContainer" class="h-16 flex items-center justify-center"><img id="contributor1Logo" src="" alt="L'ERMA di Bretschneider Logo" class="h-16"></div><div id="contributor2LogoContainer" class="h-16 flex items-center justify-center"><img id="contributor2Logo" src="" alt="Fondazione MEDA Logo" class="h-16"></div></div><button id="adminLoginBtnFooter" class="nav-button bg-transparent hover:bg-gray-700 border border-white text-white mt-4" data-lang-key="adminLoginButton"></button></div>
         </div>
@@ -294,7 +294,6 @@
         import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, onSnapshot, query, orderBy, where, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
-        // --- Firebase Configuration ---
         const firebaseConfig = {
             "apiKey": "AIzaSyAczHmVPkPxGzxg3D_7nqOZAnEqnQjfk90",
             "authDomain": "qal-website-cms.firebaseapp.com",
@@ -305,13 +304,11 @@
             "measurementId": "G-7NGEGN9N8E"
         };
         
-        // --- NEW: Hardcoded Admin User ID ---
         const ADMIN_UIDS = ["S1JofBPF0ZhnJyKvC0c1kHm8A7v1"];
 
-        // --- NEW: Simplified and Corrected Paths ---
         const PUBLICATIONS_PATH = 'publications';
         const NEWS_PATH = 'news';
-        const SITE_CONFIG_PATH = 'siteConfiguration/main'; // Single doc for all settings
+        const SITE_CONFIG_PATH = 'siteConfiguration/main';
         const STORAGE_PATH_COVERS = 'covers';
         const STORAGE_PATH_PDFS = 'pdfs';
         const STORAGE_PATH_ABSTRACTS = 'abstracts';
@@ -329,7 +326,6 @@
         let currentContributor2Logo = { url: '', fileName: '' };
         let currentLanguage = localStorage.getItem('siteLanguage') || 'en';
         
-        // --- Translations and all other functions follow ---
         const translations = {
             en: {
                 pageTitle: "QAL - Publications", navAboutUs: "About Us", navEditorialBoard: "Editorial Board",
@@ -353,7 +349,7 @@
                 aboutUsPara1: "Welcome to the official website for <strong>Quaderni di Archeologia della Libya</strong>, a prestigious academic journal dedicated to archaeological research in Libya. Initiated in 1950, this esteemed series documents the significant contributions of Italian archaeological missions in the region, fostering a deeper understanding of its rich ancient history.",
                 aboutUsPara2: "After a brief hiatus, the journal proudly resumed publication in 2018 with a new series, re-establishing itself as a leading scientific platform. We provide an essential venue for scholars interested in the archaeology and history of Libya and the broader Maghreb, ensuring high-quality, peer-reviewed content.",
                 aboutUsPara3: "Our volumes embrace a multidisciplinary approach, featuring articles on epigraphy, ancient and colonial history, the history of archaeology, and territorial studies. Contributions are published in major European languages, complemented by comprehensive English and Arabic abstracts, to promote international academic exchange and collaboration.",
-                aboutUsPara4: "This website serves as a dedicated resource for the series, maintained by L'Ema di Bretschneider, a renowned academic publishing house in Rome. We are committed to upholding the highest standards of scholarly excellence and ensuring the continued global dissemination of groundbreaking research presented in the \"Quaderni di Archeologia della Libya.\"",
+                aboutUsPara4: "This website serves as a dedicated resource for the series, maintained by L'Erma di Bretschneider, a renowned academic publishing house in Rome. We are committed to upholding the highest standards of scholarly excellence and ensuring the continued global dissemination of groundbreaking research presented in the \"Quaderni di Archeologia della Libya.\"",
                 currentPublicationsHeading: "Current Publications", editorialBoardHeading: "Meet the Editorial Board",
                 editorialBoardIntro: "Our journal is guided by a distinguished panel of scholars and experts in Libyan archaeology and related fields. Their expertise ensures the high quality and academic rigor of our publications.",
                 editorInChief: "Editor-in-Chief", associateEditor: "Associate Editor", editorialBoardMember: "Editorial Board Member",
@@ -546,7 +542,28 @@
         const views = {};
 
         function applyTranslations(lang) {
-            // This function remains the same
+             const elements = document.querySelectorAll('[data-lang-key]');
+            elements.forEach(element => {
+                const key = element.dataset.langKey;
+                if (translations[lang] && translations[lang][key]) {
+                    if (element.tagName === 'INPUT' && element.hasAttribute('placeholder')) {
+                        element.placeholder = translations[lang][key];
+                    } else if (element.tagName === 'OPTION') {
+                        element.textContent = translations[lang][key];
+                    } else {
+                        element.innerHTML = translations[lang][key]; 
+                    }
+                }
+            });
+            document.querySelectorAll('.lang-button').forEach(button => {
+                button.classList.toggle('active', button.dataset.lang === lang);
+            });
+            currentLanguage = lang;
+            localStorage.setItem('siteLanguage', lang);
+            if (auth && auth.currentUser && views.adminDashboard && !views.adminDashboard.classList.contains('hidden')) {
+                 listenForAdminPublications(); 
+                 listenForAdminNews();
+            }
         }
 
         async function initializeFirebase() {
@@ -556,7 +573,6 @@
                 auth = getAuth(app);               
                 storage = getStorage(app);
                 onAuthStateChanged(auth, (user) => {
-                    console.log("Auth state changed. User:", user ? user.uid : 'null');
                     document.getElementById('loggedInUserEmail').textContent = user ? user.email : '';
                     updateAuthUI(user); 
                     setupListeners(user);
@@ -564,12 +580,11 @@
             } catch (error) { console.error("Firebase init error:", error); showMessageModal("errorMessage", "firebaseInitError", "error"); }
         }
 
-        // --- NEW AND IMPROVED AUTH LOGIC ---
         function updateAuthUI(user) {
             const isAdminViewActive = currentView === 'adminDashboard' || currentView === 'adminLogin';
             const isClientSideAdmin = user && ADMIN_UIDS.includes(user.uid);
 
-            console.log(`updateAuthUI: User: ${user ? user.uid : 'null'}, isAdmin: ${isClientSideAdmin}`);
+            console.log(`AuthUI Update: User is ${isClientSideAdmin ? 'ADMIN' : 'not admin'}.`);
 
             document.getElementById('adminLoginBtnFooter').classList.toggle('hidden', isClientSideAdmin);
             document.getElementById('adminLogoutBtn').classList.toggle('hidden', !isClientSideAdmin);
@@ -585,23 +600,441 @@
         
         function setupListeners(user) {
              if (!db) return;
+            const isAdmin = user && ADMIN_UIDS.includes(user.uid);
+
             listenForPublicPublications(); 
             listenForCurrentIssue(); 
             listenForNews(); 
             listenForSiteLogos();
-            const isAdmin = user && ADMIN_UIDS.includes(user.uid);
+            
             if (isAdmin) { 
-                console.log("User is an admin, setting up admin listeners.");
+                console.log("Setting up admin data listeners.");
                 listenForAdminPublications(); 
                 listenForAdminNews();
+            } else {
+                 console.log("Clearing admin data tables for non-admin user.");
+                const noPubsMsg = (translations[currentLanguage] && translations[currentLanguage].noPublicationsToManage) || 'No publications to manage.';
+                const noNewsMsg = (translations[currentLanguage] && translations[currentLanguage].noNewsToManage) || 'No news to manage.';
+                document.getElementById('adminPublicationsList').innerHTML = `<tr class="admin-table-row"><td colspan="4" class="px-6 py-4" data-lang-key="noPublicationsToManage">${noPubsMsg}</td></tr>`;
+                document.getElementById('adminNewsList').innerHTML = `<tr class="admin-table-row"><td colspan="3" class="px-6 py-4" data-lang-key="noNewsToManage">${noNewsMsg}</td></tr>`;
             }
         }
         
-        // --- ALL OTHER FUNCTIONS (UNCHANGED) ---
+        function showView(viewId) {
+            Object.values(views).forEach(view => view && view.classList.add('hidden'));
+            const targetView = views[viewId];
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                currentView = viewId;
+                document.body.classList.toggle('admin-bg', viewId === 'adminLogin' || viewId === 'adminDashboard');
+                if (viewId === 'adminDashboard') {
+                    document.getElementById('adminManagePublications').classList.remove('hidden');
+                    document.getElementById('adminManageNews').classList.add('hidden');
+                    document.getElementById('adminManageSiteSettings').classList.add('hidden');
+                    resetAddPublicationForm();
+                }
+            } else {
+                console.warn("View not found:", viewId);
+                showMessageModal("errorMessage", "viewNotFound", "error");
+            }
+        }
 
-        // (The huge block of remaining JS functions would go here, but for brevity, I am omitting them. The downloaded file will have them all.)
+        function getOriginalFileNameFromUnique(uniqueFileName) {
+            if (!uniqueFileName) return '';
+            const parts = uniqueFileName.split('_');
+            if (parts.length > 1 && !isNaN(Number(parts[0]))) {
+                parts.shift(); return parts.join('_');
+            }
+            return uniqueFileName;
+        }
 
-        // --- Main Execution ---
+        async function uploadFile(file, path) {
+            if (!file) return { url: '', fileName: '' };
+            const uniqueFileName = `${Date.now()}_${file.name}`;
+            const storageRef = ref(storage, `${path}/${uniqueFileName}`);
+            try {
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+                return { url: downloadURL, fileName: uniqueFileName };
+            } catch (error) {
+                console.error("Error uploading file:", file.name, "to path:", path, error);
+                throw error;
+            }
+        }
+
+        async function deleteFile(uniqueFileName, path) {
+            if (!uniqueFileName || !path) { return; }
+            try {
+                const fileRef = ref(storage, `${path}/${uniqueFileName}`);
+                await deleteObject(fileRef);
+            } catch (error) {
+                if (error.code !== 'storage/object-not-found') {
+                    console.error(`File deletion failed: ${uniqueFileName}`, error);
+                }
+            }
+        }
+        
+        function listenForSiteLogos() {
+            const docRef = doc(db, SITE_CONFIG_PATH);
+            onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    currentHeaderLogo = { url: data.headerLogoUrl || '', fileName: data.headerLogoFileName || '' };
+                    currentFooterLogo = { url: data.footerLogoUrl || '', fileName: data.footerLogoFileName || '' };
+                    currentContributor1Logo = { url: data.contributor1LogoUrl || '', fileName: data.contributor1LogoFileName || '' };
+                    currentContributor2Logo = { url: data.contributor2LogoUrl || '', fileName: data.contributor2LogoFileName || '' };
+                } else {
+                    console.warn(`Site configuration document not found. Using defaults.`);
+                }
+                updateSiteLogosUI();
+            }, (error) => {
+                console.error("Error listening for site logos:", error);
+            });
+        }
+        function updateSiteLogosUI() {
+            document.getElementById('mainHeaderLogo').src = currentHeaderLogo.url || 'https://placehold.co/200x120/d8dbdf/3f4245?text=Logo';
+            document.getElementById('mainFooterLogo').src = currentFooterLogo.url || 'https://placehold.co/150x80/a0a8b3/2c2f33?text=Logo';
+            document.getElementById('contributor1Logo').src = currentContributor1Logo.url || 'https://placehold.co/150x80/a0a8b3/2c2f33?text=Contributor+1';
+            document.getElementById('contributor2Logo').src = currentContributor2Logo.url || 'https://placehold.co/150x80/a0a8b3/2c2f33?text=Contributor+2';
+            loadSiteLogosForAdmin();
+        }
+
+        function loadSiteLogosForAdmin() {
+             const adminPreviews = {
+                header: { imgId: 'headerLogoPreview', textId: 'headerLogoFileNameDisplayAdmin', current: currentHeaderLogo, noMsgKey: 'noCustomHeaderLogo' },
+                footer: { imgId: 'footerLogoPreview', textId: 'footerLogoFileNameDisplayAdmin', current: currentFooterLogo, noMsgKey: 'noCustomFooterLogo' },
+                contributor1: { imgId: 'contributor1LogoPreview', textId: 'contributor1FileNameDisplayAdmin', current: currentContributor1Logo, noMsgKey: 'noLERMALogo' },
+                contributor2: { imgId: 'contributor2LogoPreview', textId: 'contributor2FileNameDisplayAdmin', current: currentContributor2Logo, noMsgKey: 'noMEDALogo' }
+            };
+            for (const key in adminPreviews) {
+                const { imgId, textId, current, noMsgKey } = adminPreviews[key];
+                const imgEl = document.getElementById(imgId); const textEl = document.getElementById(textId);
+                if (imgEl && textEl) {
+                    imgEl.src = current.url || ''; 
+                    imgEl.style.display = current.fileName ? 'block' : 'none'; 
+                    textEl.textContent = current.fileName ? `${translations[currentLanguage]?.currentLabel || 'Current'}: ${getOriginalFileNameFromUnique(current.fileName)}` : (translations[currentLanguage]?.[noMsgKey] || 'No logo set.');
+                }
+            }
+        }
+        function handleLogoFileInput(inputElement, previewImgElement, fileNameDisplayElement, currentLogoState, noMsgKey) {
+            const file = inputElement.files[0];
+            if (file) {
+                fileNameDisplayElement.textContent = `${translations[currentLanguage]?.selectedLabel || 'Selected'}: ${file.name}`;
+                if (previewImgElement) { const reader = new FileReader(); reader.onload = (event) => { previewImgElement.src = event.target.result; previewImgElement.style.display = 'block'; }; reader.readAsDataURL(file); }
+            } else {
+                fileNameDisplayElement.textContent = currentLogoState.fileName ? `${translations[currentLanguage]?.currentLabel || 'Current'}: ${getOriginalFileNameFromUnique(currentLogoState.fileName)}` : (translations[currentLanguage]?.[noMsgKey] || 'No logo set.');
+                if (previewImgElement) { previewImgElement.src = currentLogoState.url || ''; previewImgElement.style.display = (currentLogoState.url && currentLogoState.fileName) ? 'block' : 'none'; }
+            }
+        }
+
+        function listenForPublicPublications() {
+            const pubCollRef = collection(db, PUBLICATIONS_PATH);
+            const q = query(pubCollRef, orderBy("year", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const publications = []; snapshot.forEach(doc => publications.push({ id: doc.id, ...doc.data() }));
+                displayPublications(publications);
+            }, (error) => { console.error("Error listening to public publications:", error); });
+        }
+
+        function listenForCurrentIssue() {
+             const pubCollRef = collection(db, PUBLICATIONS_PATH);
+            const q = query(pubCollRef, where("isCurrentIssue", "==", true));
+            onSnapshot(q, (snapshot) => {
+                const card = document.getElementById('currentIssuePublicationCard'); 
+                const noIssueMsg = document.getElementById('currentIssueContent').querySelector('p[data-lang-key="noCurrentIssue"]');
+                if (!snapshot.empty) {
+                    const book = snapshot.docs[0].data(); 
+                    noIssueMsg.classList.add('hidden'); card.classList.remove('hidden');
+                    document.getElementById('currentIssueCover').src = book.coverImageUrl || 'https://placehold.co/400x600/e0e2e5/3f4245?text=No+Image';
+                    document.getElementById('currentIssueTitle').textContent = book.title || '';
+                    document.getElementById('currentIssueAuthors').textContent = book.authors || '';
+                    document.getElementById('currentIssueYear').textContent = book.year || '';
+                    document.getElementById('currentIssueDescription').textContent = book.description || '';
+                    const updateBtn = (id, url, key) => { const btn=document.getElementById(id); btn.href=url||'#'; btn.classList.toggle('disabled',!url); btn.onclick=url?null:(e)=>{e.preventDefault();showMessageModal("unavailable",key,"alert");};};
+                    updateBtn('currentIssueDownloadPdfBtn', book.pdfUrl, 'fullPdfUnavailable'); 
+                    updateBtn('currentIssueDownloadAbstractArBtn', book.abstracts?.ar?.url, 'arabicAbstractPdfUnavailable'); 
+                    updateBtn('currentIssueDownloadAbstractEnBtn', book.abstracts?.en?.url, 'englishAbstractPdfUnavailable'); 
+                    updateBtn('currentIssueDownloadAbstractItBtn', book.abstracts?.it?.url, 'italianAbstractPdfUnavailable');
+                } else { 
+                    noIssueMsg.classList.remove('hidden'); 
+                    card.classList.add('hidden'); 
+                }
+            }, (error) => { console.error("Error listening to current issue:", error); });
+        }
+        
+        function listenForNews() {
+            const newsCollRef = collection(db, NEWS_PATH);
+            const q = query(newsCollRef, orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const newsFeedDiv = document.getElementById('newsFeed'); 
+                newsFeedDiv.innerHTML = '';
+                if (snapshot.empty) { 
+                    newsFeedDiv.innerHTML = `<p class="col-span-full text-center text-gray-400" data-lang-key="noNewsUpdates"></p>`; 
+                    applyTranslations(currentLanguage);
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const news = { id: doc.id, ...doc.data() };
+                    newsFeedDiv.innerHTML += `<div class="bg-gray-100 p-6 rounded-lg shadow-md border"><h3 class="text-xl font-bold mb-2">${news.title}</h3><p class="text-sm mb-3">${new Date(news.timestamp).toLocaleDateString(currentLanguage==='it'?'it-IT':'en-US')}</p><p class="text-base">${news.description}</p>${news.imageUrl ? `<img src="${news.imageUrl}" alt="${news.title}" class="w-full h-48 object-cover rounded-md mt-4 shadow-sm" onerror="this.style.display='none';">` : ''}</div>`;
+                });
+            }, (error) => { console.error("Error listening to news:", error);});
+        }
+        
+        function displayPublications(publications) {
+            const listDiv = document.getElementById('publicationsList'); const archivalDiv = document.getElementById('archivalPublicationsList');
+            listDiv.innerHTML = ''; archivalDiv.innerHTML = '';
+            
+            const searchTerm = document.getElementById('publicationSearch').value.toLowerCase(); const sortBy = document.getElementById('sortPublications').value;
+            let filtered = publications.filter(p => (
+                (p.title||'').toLowerCase().includes(searchTerm) || 
+                (p.authors||'').toLowerCase().includes(searchTerm) || 
+                String(p.year||'').includes(searchTerm) ||
+                (p.description||'').toLowerCase().includes(searchTerm) ||
+                (p.isbn||'').toLowerCase().includes(searchTerm) ||
+                (p.issn||'').toLowerCase().includes(searchTerm) ||
+                (p.abstracts?.ar?.text||'').toLowerCase().includes(searchTerm) ||
+                (p.abstracts?.en?.text||'').toLowerCase().includes(searchTerm) ||
+                (p.abstracts?.it?.text||'').toLowerCase().includes(searchTerm)
+            ));
+            
+            if (sortBy === 'year-desc') filtered.sort((a,b)=>(b.year||0)-(a.year||0)); 
+            else if (sortBy === 'year-asc') filtered.sort((a,b)=>(a.year||0)-(b.year||0)); 
+            else if (sortBy === 'title-asc') filtered.sort((a,b)=>(a.title||'').localeCompare(b.title||'')); 
+            else if (sortBy === 'title-desc') filtered.sort((a,b)=>(b.title||'').localeCompare(a.title||'')); 
+            else if (sortBy === 'author-asc') filtered.sort((a,b)=>(a.authors||'').localeCompare(b.authors||'')); 
+            else if (sortBy === 'author-desc') filtered.sort((a,b)=>(b.authors||'').localeCompare(a.authors||''));
+
+            if (filtered.length === 0) {
+                 listDiv.innerHTML = `<p class="col-span-full text-center text-gray-400" data-lang-key="noSearchResults"></p>`;
+                 archivalDiv.innerHTML = `<p class="col-span-full text-center text-gray-400" data-lang-key="noSearchResults"></p>`;
+                 applyTranslations(currentLanguage);
+                 return;
+            }
+
+            filtered.forEach(book => {
+                const cardHtml = `<div class="publication-card p-4 flex flex-col items-center text-center"><img src="${book.coverImageUrl||'https://placehold.co/400x600/e0e2e5/3f4245?text=No+Image'}" alt="${book.title||''} Cover" class="cover-image rounded-md mb-4"><h3 class="text-xl font-bold mb-2">${book.title||''}</h3><p class="mb-1">${book.authors||''}</p><p class="text-sm font-medium">${book.year||''}</p><p class="text-sm mt-2 flex-grow overflow-hidden line-clamp-3">${book.description||''}</p><button class="nav-button text-sm mt-4 view-publication-details" data-id="${book.id}" data-lang-key="viewDetailsButton"></button></div>`;
+                listDiv.innerHTML += cardHtml; 
+                archivalDiv.innerHTML += cardHtml;
+            });
+            document.querySelectorAll('.view-publication-details').forEach(btn => btn.addEventListener('click', async (e) => { 
+                const bookId = e.currentTarget.dataset.id; 
+                const docRef = doc(db, PUBLICATIONS_PATH, bookId); 
+                const docSnap = await getDoc(docRef); 
+                if (docSnap.exists()) showPublicationDetailsModal(docSnap.data()); 
+            }));
+            applyTranslations(currentLanguage);
+        }
+        
+        function listenForAdminPublications() {
+            const pubCollRef = collection(db, PUBLICATIONS_PATH); 
+            const q = query(pubCollRef, orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const listBody = document.getElementById('adminPublicationsList'); listBody.innerHTML = '';
+                if (snapshot.empty) { 
+                    listBody.innerHTML = `<tr class="admin-table-row"><td colspan="4" class="px-6 py-4" data-lang-key="noPublicationsToManage"></td></tr>`; 
+                    applyTranslations(currentLanguage);
+                    return;
+                }
+                snapshot.forEach(d => { 
+                    const book = { id: d.id, ...d.data() }; 
+                    const row = listBody.insertRow(); 
+                    row.className = 'admin-table-row'; 
+                    const currentIndicator = book.isCurrentIssue ? `<span class="ml-2 px-2 py-1 bg-blue-500 text-white text-xs rounded-full" data-lang-key="currentLabelShort"></span>` : '';
+                    row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap text-sm">${book.title||''}${currentIndicator}</td><td class="px-6 py-4 whitespace-nowrap text-sm">${book.authors||''}</td><td class="px-6 py-4 whitespace-nowrap text-sm">${book.year||''}</td><td class="px-6 py-4 whitespace-nowrap text-right text-sm flex space-x-2"><button class="text-blue-600 hover:text-blue-800 edit-publication-button admin-button text-xs p-2" data-id="${book.id}" data-lang-key="editButton"></button><button class="text-red-600 hover:text-red-800 delete-publication-button admin-button text-xs p-2" data-id="${book.id}" data-lang-key="deleteButton"></button></td>`;
+                });
+                document.querySelectorAll('.edit-publication-button').forEach(btn => btn.addEventListener('click', (e) => editPublication(e.currentTarget.dataset.id)));
+                document.querySelectorAll('.delete-publication-button').forEach(btn => btn.addEventListener('click', (e) => confirmDeletePublication(e.currentTarget.dataset.id)));
+                applyTranslations(currentLanguage);
+            }, (error) => { console.error("Error admin publications:", error); });
+        }
+        
+        function resetAddPublicationForm() {
+            document.getElementById('addPublicationForm').reset(); editingPublicationId = null;
+            document.getElementById('adminFormTitle').setAttribute('data-lang-key', 'addPublicationTitle');
+            document.getElementById('submitPublicationBtn').setAttribute('data-lang-key', 'addPublicationButton');
+            document.getElementById('cancelEditPublicationBtn').classList.add('hidden');
+            document.getElementById('uploadedCoverPreviewAdmin').src = ''; document.getElementById('uploadedCoverPreviewAdmin').style.display = 'none';
+            document.getElementById('coverImageFileNameDisplayAdmin').textContent = ''; 
+            document.getElementById('pdfFileNameDisplayAdmin').textContent = '';
+            document.getElementById('abstractArPdfFileNameDisplayAdmin').textContent = ''; 
+            document.getElementById('abstractEnPdfFileNameDisplayAdmin').textContent = ''; 
+            document.getElementById('abstractItPdfFileNameDisplayAdmin').textContent = '';
+            currentPubFiles = {coverUrl:'',coverFileName:'',pdfUrl:'',pdfFileName:'',abstracts:{ar:{text:'',url:'',fileName:''},en:{text:'',url:'',fileName:''},it:{text:'',url:'',fileName:''}}};
+            applyTranslations(currentLanguage);
+        }
+        
+        async function editPublication(pubId) {
+            showLoadingSpinner(); 
+            try {
+                const docRef = doc(db, PUBLICATIONS_PATH, pubId); 
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const d = docSnap.data(); 
+                    editingPublicationId = pubId;
+                    document.getElementById('bookTitle').value=d.title||'';
+                    document.getElementById('bookAuthors').value=d.authors||'';
+                    document.getElementById('bookYear').value=d.year!=null?d.year:'';
+                    document.getElementById('bookDescription').value=d.description||'';
+                    document.getElementById('bookISBN').value=d.isbn||'';
+                    document.getElementById('bookISSN').value=d.issn||'';
+                    document.getElementById('abstractArText').value=d.abstracts?.ar?.text||'';
+                    document.getElementById('abstractEnText').value=d.abstracts?.en?.text||'';
+                    document.getElementById('abstractItText').value=d.abstracts?.it?.text||'';
+                    document.getElementById('bookIsCurrentIssue').checked=d.isCurrentIssue||false;
+                    
+                    currentPubFiles={coverUrl:d.coverImageUrl||'',coverImageFileName:d.coverImageFileName||'',pdfUrl:d.pdfUrl||'',pdfFileName:d.pdfFileName||'',abstracts:{ar:d.abstracts?.ar||{text:'',url:'',fileName:''},en:d.abstracts?.en||{text:'',url:'',fileName:''},it:d.abstracts?.it||{text:'',url:'',fileName:''}}};
+                    
+                    document.getElementById('uploadedCoverPreviewAdmin').src=currentPubFiles.coverUrl; 
+                    document.getElementById('uploadedCoverPreviewAdmin').style.display=currentPubFiles.coverUrl?'block':'none';
+                    handleLogoFileInput(document.getElementById('bookCover'), document.getElementById('uploadedCoverPreviewAdmin'), document.getElementById('coverImageFileNameDisplayAdmin'), { url: d.coverImageUrl, fileName: d.coverImageFileName }, 'noCoverImage');
+                    
+                    document.getElementById('bookCover').value=''; document.getElementById('bookPdf').value=''; document.getElementById('abstractArPdf').value=''; document.getElementById('abstractEnPdf').value=''; document.getElementById('abstractItPdf').value='';
+                    
+                    document.getElementById('adminFormTitle').setAttribute('data-lang-key', 'updatePublicationButton');
+                    document.getElementById('submitPublicationBtn').setAttribute('data-lang-key', 'updatePublicationButton');
+                    document.getElementById('cancelEditPublicationBtn').classList.remove('hidden');
+                    applyTranslations(currentLanguage);
+                    window.scrollTo({top:0,behavior:'smooth'});
+                }
+            } catch(e) { console.error("Edit pub error:",e); } 
+            finally { hideLoadingSpinner(); }
+        }
+
+        function confirmDeletePublication(pubId) {
+            showMessageModal("confirmDelete","confirmDeleteMsg","confirm", async (confirmed) => {
+                if(confirmed){ 
+                    showLoadingSpinner(); 
+                    try {
+                        const docRef=doc(db, PUBLICATIONS_PATH, pubId); 
+                        const docSnap=await getDoc(docRef);
+                        if(docSnap.exists()){ 
+                            const d=docSnap.data();
+                            if(d.coverImageFileName) await deleteFile(d.coverImageFileName,STORAGE_PATH_COVERS); 
+                            if(d.pdfFileName) await deleteFile(d.pdfFileName,STORAGE_PATH_PDFS);
+                            if(d.abstracts?.ar?.fileName) await deleteFile(d.abstracts.ar.fileName,STORAGE_PATH_ABSTRACTS); 
+                            if(d.abstracts?.en?.fileName) await deleteFile(d.abstracts.en.fileName,STORAGE_PATH_ABSTRACTS); 
+                            if(d.abstracts?.it?.fileName) await deleteFile(d.abstracts.it.fileName,STORAGE_PATH_ABSTRACTS);
+                            await deleteDoc(docRef); 
+                            showMessageModal("successMessage","publicationDeleted","success");
+                        }
+                    } catch(e) { console.error("Del pub error:",e); }
+                    finally { hideLoadingSpinner(); } 
+                }
+            });
+        }
+        
+        function resetAddNewsItemForm() {
+            document.getElementById('addNewsItemForm').reset();
+            editingNewsItemId=null; 
+            document.getElementById('submitNewsBtn').setAttribute('data-lang-key', 'addNewsItemButton');
+            document.getElementById('cancelEditNewsBtn').classList.add('hidden');
+            currentNewsImage = { url: '', fileName: '' };
+            handleLogoFileInput(document.getElementById('newsImage'), document.getElementById('uploadedNewsImagePreviewAdmin'), document.getElementById('newsImageFileNameDisplayAdmin'), currentNewsImage, 'noNewsImage');
+            applyTranslations(currentLanguage);
+        }
+        
+        async function editNewsItem(newsId){
+            showLoadingSpinner(); 
+            try{
+                const docRef=doc(db, NEWS_PATH, newsId); 
+                const docSnap=await getDoc(docRef);
+                if(docSnap.exists()){ 
+                    const d=docSnap.data(); 
+                    editingNewsItemId=newsId;
+                    document.getElementById('newsTitle').value=d.title||''; 
+                    document.getElementById('newsDescription').value=d.description||'';
+                    currentNewsImage={url:d.imageUrl||'',fileName:d.imageFileName||''};
+                    document.getElementById('newsImage').value='';
+                    document.getElementById('submitNewsBtn').setAttribute('data-lang-key', 'updateNewsItemButton');
+                    document.getElementById('cancelEditNewsBtn').classList.remove('hidden');
+                    handleLogoFileInput(document.getElementById('newsImage'), document.getElementById('uploadedNewsImagePreviewAdmin'), document.getElementById('newsImageFileNameDisplayAdmin'), currentNewsImage, 'noNewsImage');
+                    applyTranslations(currentLanguage);
+                    window.scrollTo({top:0,behavior:'smooth'});
+                }
+            } catch(e){ console.error("Edit news err:",e); }
+            finally{ hideLoadingSpinner(); }
+        }
+        
+        function confirmDeleteNewsItem(newsId){
+            showMessageModal("confirmDelete","confirmDeleteMsg","confirm",async(confirmed)=>{
+                if(confirmed){
+                    showLoadingSpinner();
+                    try{
+                        const newsRef=doc(db, NEWS_PATH, newsId); 
+                        const newsDoc=await getDoc(newsRef);
+                        if(newsDoc.exists()){ 
+                            const d=newsDoc.data(); 
+                            if(d.imageFileName) await deleteFile(d.imageFileName,STORAGE_PATH_NEWS_IMAGES); 
+                            await deleteDoc(newsRef); 
+                            showMessageModal("successMessage","newsItemDeleted","success");
+                        }
+                    } catch(e) { console.error("Del news err:",e); }
+                    finally{ hideLoadingSpinner(); }
+                }
+            });
+        }
+        
+        function listenForAdminNews() {
+            const newsCollRef = collection(db, NEWS_PATH); 
+            const q = query(newsCollRef, orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const listBody = document.getElementById('adminNewsList'); 
+                listBody.innerHTML = '';
+                if (snapshot.empty) { 
+                    listBody.innerHTML = `<tr class="admin-table-row"><td colspan="3" class="px-6 py-4" data-lang-key="noNewsToManage"></td></tr>`; 
+                    applyTranslations(currentLanguage);
+                    return;
+                }
+                snapshot.forEach(d => {
+                    const news = { id: d.id, ...d.data() }; 
+                    const row = listBody.insertRow(); 
+                    row.className = 'admin-table-row';
+                    row.innerHTML = `<td class="px-6 py-4 whitespace-nowrap text-sm">${news.title||''}</td><td class="px-6 py-4 whitespace-nowrap text-sm">${new Date(news.timestamp).toLocaleDateString(currentLanguage==='it'?'it-IT':'en-US')}</td><td class="px-6 py-4 whitespace-nowrap text-right text-sm flex space-x-2"><button class="text-blue-600 hover:text-blue-800 edit-news-button admin-button text-xs p-2" data-id="${news.id}" data-lang-key="editButton"></button><button class="text-red-600 hover:text-red-800 delete-news-button admin-button text-xs p-2" data-id="${news.id}" data-lang-key="deleteButton"></button></td>`;
+                });
+                document.querySelectorAll('.edit-news-button').forEach(btn => btn.addEventListener('click', (e) => editNewsItem(e.currentTarget.dataset.id)));
+                document.querySelectorAll('.delete-news-button').forEach(btn => btn.addEventListener('click', (e) => confirmDeleteNewsItem(e.currentTarget.dataset.id)));
+                applyTranslations(currentLanguage);
+            }, (error) => { console.error("Error admin news:", error); });
+        }
+        
+        function showMessageModal(titleKey, messageKey, type = "alert", callback = null) {
+            const messageModalElement = document.getElementById('messageModal');
+            const messageTextElement = document.getElementById('messageText');
+            const modalButtonsElement = document.getElementById('modalButtons');
+            messageTextElement.innerHTML = `<strong>${translations[currentLanguage]?.[titleKey] || titleKey}</strong><br>${translations[currentLanguage]?.[messageKey] || messageKey}`;
+            modalButtonsElement.innerHTML = '';
+            if (type === "confirm") {
+                const yesBtn = document.createElement('button'); yesBtn.textContent=translations[currentLanguage]?.yesButton||'Yes'; yesBtn.className='nav-button bg-red-600'; yesBtn.onclick=()=>{messageModalElement.classList.remove('flex');messageModalElement.classList.add('hidden');if(callback)callback(true);}; modalButtonsElement.appendChild(yesBtn);
+                const noBtn = document.createElement('button'); noBtn.textContent=translations[currentLanguage]?.noButton||'No'; noBtn.className='nav-button bg-gray-500'; noBtn.onclick=()=>{messageModalElement.classList.remove('flex');messageModalElement.classList.add('hidden');if(callback)callback(false);}; modalButtonsElement.appendChild(noBtn);
+            } else {
+                const okBtn = document.createElement('button'); okBtn.textContent=translations[currentLanguage]?.okButton||'OK'; okBtn.className='nav-button bg-blue-600'; okBtn.onclick=()=>{messageModalElement.classList.remove('flex');messageModalElement.classList.add('hidden');if(callback)callback();}; modalButtonsElement.appendChild(okBtn);
+            }
+            messageModalElement.classList.remove('hidden'); messageModalElement.classList.add('flex');
+        }
+        
+        function showPublicationDetailsModal(book) {
+            const publicationDetailsModal = document.getElementById('publicationDetailsModal');
+            document.getElementById('detailCoverImage').src = book.coverImageUrl || 'https://placehold.co/400x600/cccccc/333333?text=No+Image';
+            document.getElementById('detailTitle').textContent = book.title || '';
+            document.getElementById('detailAuthors').textContent = book.authors || '';
+            document.getElementById('detailYear').textContent = book.year || '';
+            document.getElementById('detailDescription').textContent = book.description || '';
+            document.getElementById('detailISBN').textContent = book.isbn || 'N/A'; document.getElementById('detailISSN').textContent = book.issn || 'N/A';
+            document.getElementById('detailAbstractArText').textContent = book.abstracts?.ar?.text || '';
+            document.getElementById('detailAbstractEnText').textContent = book.abstracts?.en?.text || '';
+            document.getElementById('detailAbstractItText').textContent = book.abstracts?.it?.text || '';
+            const updateDownloadLink = (id, url, key) => { const link=document.getElementById(id); link.href=url||'#'; link.classList.toggle('disabled',!url); link.onclick=url?null:(e)=>{e.preventDefault();showMessageModal("unavailable",key,"alert");};};
+            updateDownloadLink('detailDownloadPdfBtn', book.pdfUrl, 'fullPdfUnavailable'); 
+            updateDownloadLink('detailDownloadAbstractArBtn', book.abstracts?.ar?.url, 'arabicAbstractPdfUnavailable'); 
+            updateDownloadLink('detailDownloadAbstractEnBtn', book.abstracts?.en?.url, 'englishAbstractPdfUnavailable'); 
+            updateDownloadLink('detailDownloadAbstractItBtn', book.abstracts?.it?.url, 'italianAbstractPdfUnavailable');
+            publicationDetailsModal.classList.remove('hidden'); publicationDetailsModal.classList.add('flex');
+            applyTranslations(currentLanguage);
+        }
+        
+        function showLoadingSpinner() { document.getElementById('loadingSpinner').classList.remove('hidden'); }
+        function hideLoadingSpinner() { document.getElementById('loadingSpinner').classList.add('hidden'); }
+        
         window.onload = function() {
             views.aboutUs = document.getElementById('aboutUsView');
             views.editorialBoard = document.getElementById('editorialBoardView');
@@ -612,38 +1045,217 @@
             views.adminLogin = document.getElementById('adminLoginView');
             views.adminDashboard = document.getElementById('adminDashboardView');
             
-            applyTranslations(currentLanguage);
             initializeFirebase();
+            
             document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-            // All event listeners from the original file...
-            document.querySelectorAll('.view-button').forEach(button => {button.addEventListener('click', (e) => showView(e.target.dataset.view));});
-            document.querySelectorAll('.lang-button').forEach(button => {button.addEventListener('click', (e) => applyTranslations(e.target.dataset.lang));});
+            // Setup Event Listeners
+            document.querySelectorAll('.view-button').forEach(button => button.addEventListener('click', (e) => showView(e.target.dataset.view)));
+            document.querySelectorAll('.lang-button').forEach(button => button.addEventListener('click', (e) => applyTranslations(e.target.dataset.lang)));
             document.getElementById('adminLoginBtnFooter').addEventListener('click', () => showView('adminLogin'));
-            document.getElementById('adminLogoutBtn').addEventListener('click', async () => { try { await signOut(auth); } catch (error) { console.error("Error logging out:", error); }});
+            document.getElementById('adminLogoutBtn').addEventListener('click', async () => { await signOut(auth); });
             document.getElementById('managePublicationsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.remove('hidden'); document.getElementById('adminManageNews').classList.add('hidden'); document.getElementById('adminManageSiteSettings').classList.add('hidden'); resetAddPublicationForm(); });
             document.getElementById('manageNewsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.add('hidden'); document.getElementById('adminManageNews').classList.remove('hidden'); document.getElementById('adminManageSiteSettings').classList.add('hidden'); resetAddNewsItemForm(); });
-            document.getElementById('manageSiteSettingsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.add('hidden'); document.getElementById('adminManageNews').classList.add('hidden'); document.getElementById('adminManageSiteSettings').classList.remove('hidden'); loadSiteLogosForAdmin(); });
+            document.getElementById('manageSiteSettingsBtn').addEventListener('click', () => { document.getElementById('adminManagePublications').classList.add('hidden'); document.getElementById('adminManageNews').classList.add('hidden'); document.getElementById('adminManageSiteSettings').classList.remove('hidden'); });
             
-            document.getElementById('publicationSearch').addEventListener('input', () => listenForPublicPublications());
-            document.getElementById('sortPublications').addEventListener('change', () => listenForPublicPublications());
+            document.getElementById('publicationSearch').addEventListener('input', listenForPublicPublications);
+            document.getElementById('sortPublications').addEventListener('change', listenForPublicPublications);
 
             document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
                 e.preventDefault(); 
                 showLoadingSpinner();
                 const email = document.getElementById('adminEmail').value; 
                 const password = document.getElementById('adminPassword').value; 
-                const loginErrorMessage = document.getElementById('loginErrorMessage'); 
-                loginErrorMessage.textContent = '';
+                document.getElementById('loginErrorMessage').textContent = '';
                 try { 
                     await signInWithEmailAndPassword(auth, email, password); 
                 } catch (error) { 
-                    loginErrorMessage.textContent = "Invalid credentials. Please try again.";
+                    document.getElementById('loginErrorMessage').textContent = "Invalid credentials. Please try again.";
                 } finally { 
                     hideLoadingSpinner(); 
                 }
             });
-            // The rest of the event listeners and functions from the original provided code...
+
+            document.getElementById('addPublicationForm').addEventListener('submit', async (e) => {
+                e.preventDefault(); 
+                if (!auth.currentUser || !ADMIN_UIDS.includes(auth.currentUser.uid)) return;
+                showLoadingSpinner();
+                
+                const data = {
+                    title: document.getElementById('bookTitle').value.trim(),
+                    authors: document.getElementById('bookAuthors').value.trim(),
+                    year: document.getElementById('bookYear').value ? parseInt(document.getElementById('bookYear').value, 10) : null,
+                    description: document.getElementById('bookDescription').value.trim(),
+                    isbn: document.getElementById('bookISBN').value.trim(),
+                    issn: document.getElementById('bookISSN').value.trim(),
+                    isCurrentIssue: document.getElementById('bookIsCurrentIssue').checked,
+                    timestamp: new Date().toISOString()
+                };
+
+                try {
+                    const uploadAndUpdate = async (input, currentFile, path) => {
+                        let { url, fileName } = currentFile;
+                        if (input.files[0]) {
+                            if (fileName) await deleteFile(fileName, path);
+                            const res = await uploadFile(input.files[0], path);
+                            return res;
+                        }
+                        return { url, fileName };
+                    };
+                    const coverRes = await uploadAndUpdate(document.getElementById('bookCover'), { url: currentPubFiles.coverUrl, fileName: currentPubFiles.coverImageFileName }, STORAGE_PATH_COVERS);
+                    data.coverImageUrl = coverRes.url;
+                    data.coverImageFileName = coverRes.fileName;
+
+                    const pdfRes = await uploadAndUpdate(document.getElementById('bookPdf'), { url: currentPubFiles.pdfUrl, fileName: currentPubFiles.pdfFileName }, STORAGE_PATH_PDFS);
+                    data.pdfUrl = pdfRes.url;
+                    data.pdfFileName = pdfRes.fileName;
+                    
+                    data.abstracts = {};
+                    const absArRes = await uploadAndUpdate(document.getElementById('abstractArPdf'), currentPubFiles.abstracts.ar, STORAGE_PATH_ABSTRACTS);
+                    data.abstracts.ar = { text: document.getElementById('abstractArText').value.trim(), url: absArRes.url, fileName: absArRes.fileName };
+
+                    const absEnRes = await uploadAndUpdate(document.getElementById('abstractEnPdf'), currentPubFiles.abstracts.en, STORAGE_PATH_ABSTRACTS);
+                    data.abstracts.en = { text: document.getElementById('abstractEnText').value.trim(), url: absEnRes.url, fileName: absEnRes.fileName };
+                    
+                    const absItRes = await uploadAndUpdate(document.getElementById('abstractItPdf'), currentPubFiles.abstracts.it, STORAGE_PATH_ABSTRACTS);
+                    data.abstracts.it = { text: document.getElementById('abstractItText').value.trim(), url: absItRes.url, fileName: absItRes.fileName };
+                    
+                    const pubCollRef = collection(db, PUBLICATIONS_PATH);
+                    if (data.isCurrentIssue) {
+                        const q = query(pubCollRef, where("isCurrentIssue", "==", true));
+                        const snap = await getDocs(q);
+                        for (const docToUpdate of snap.docs) {
+                            if(docToUpdate.id !== editingPublicationId) await updateDoc(docToUpdate.ref, { isCurrentIssue: false });
+                        }
+                    }
+
+                    if (editingPublicationId) {
+                        await updateDoc(doc(db, PUBLICATIONS_PATH, editingPublicationId), data);
+                    } else {
+                        await addDoc(pubCollRef, data);
+                    }
+                    resetAddPublicationForm();
+                } catch (error) { 
+                    console.error("Error saving publication:", error);
+                    showMessageModal("errorMessage","errorSavingPublication","error");
+                } finally { 
+                    hideLoadingSpinner(); 
+                }
+            });
+            
+            document.getElementById('addNewsItemForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!auth.currentUser || !ADMIN_UIDS.includes(auth.currentUser.uid)) return;
+                showLoadingSpinner();
+                
+                let imageUrl = currentNewsImage.url, imageFileName = currentNewsImage.fileName;
+                const newsImageInput = document.getElementById('newsImage');
+                try {
+                    if(newsImageInput.files[0]){ 
+                        if(currentNewsImage.fileName) await deleteFile(currentNewsImage.fileName, STORAGE_PATH_NEWS_IMAGES); 
+                        const res = await uploadFile(newsImageInput.files[0], STORAGE_PATH_NEWS_IMAGES); 
+                        imageUrl = res.url; 
+                        imageFileName = res.fileName;
+                    }
+                    const newsData = {
+                        title: document.getElementById('newsTitle').value.trim(),
+                        description: document.getElementById('newsDescription').value.trim(),
+                        imageUrl,
+                        imageFileName,
+                        timestamp:new Date().toISOString()
+                    };
+                    if(editingNewsItemId){
+                        await updateDoc(doc(db, NEWS_PATH, editingNewsItemId), newsData);
+                    } else {
+                        await addDoc(collection(db, NEWS_PATH), newsData);
+                    }
+                    resetAddNewsItemForm();
+                } catch(err){ console.error("Save news error:",err); }
+                finally{ hideLoadingSpinner(); }
+            });
+
+            document.getElementById('logoUploadForm').addEventListener('submit', async (e) => {
+                e.preventDefault(); 
+                if (!auth.currentUser || !ADMIN_UIDS.includes(auth.currentUser.uid)) return;
+                showLoadingSpinner();
+
+                const siteConfigRef = doc(db, SITE_CONFIG_PATH);
+                const updates = {};
+                try {
+                    const headerFile = document.getElementById('headerLogoUpload').files[0];
+                    if (headerFile) { 
+                        if (currentHeaderLogo.fileName) await deleteFile(currentHeaderLogo.fileName, STORAGE_PATH_LOGOS);
+                        const { url, fileName } = await uploadFile(headerFile, STORAGE_PATH_LOGOS);
+                        updates.headerLogoUrl = url;
+                        updates.headerLogoFileName = fileName;
+                    }
+
+                    const footerFile = document.getElementById('footerLogoUpload').files[0];
+                    if (footerFile) {
+                        if (currentFooterLogo.fileName) await deleteFile(currentFooterLogo.fileName, STORAGE_PATH_LOGOS);
+                        const { url, fileName } = await uploadFile(footerFile, STORAGE_PATH_LOGOS);
+                        updates.footerLogoUrl = url;
+                        updates.footerLogoFileName = fileName;
+                    }
+
+                    if (Object.keys(updates).length > 0) {
+                        await setDoc(siteConfigRef, updates, { merge: true });
+                    }
+                    document.getElementById('headerLogoUpload').value = ''; 
+                    document.getElementById('footerLogoUpload').value = '';
+                } catch (error) { console.error("Error updating logos:", error); }
+                finally { hideLoadingSpinner(); }
+            });
+            
+            document.getElementById('contributorLogoUploadForm').addEventListener('submit', async (e) => {
+                 e.preventDefault(); 
+                if (!auth.currentUser || !ADMIN_UIDS.includes(auth.currentUser.uid)) return;
+                showLoadingSpinner();
+                
+                const siteConfigRef = doc(db, SITE_CONFIG_PATH);
+                const updates = {};
+                try {
+                    const c1File = document.getElementById('contributor1LogoUpload').files[0];
+                    if (c1File) {
+                        if (currentContributor1Logo.fileName) await deleteFile(currentContributor1Logo.fileName, STORAGE_PATH_LOGOS);
+                        const { url, fileName } = await uploadFile(c1File, STORAGE_PATH_LOGOS);
+                        updates.contributor1LogoUrl = url;
+                        updates.contributor1LogoFileName = fileName;
+                    }
+                    const c2File = document.getElementById('contributor2LogoUpload').files[0];
+                     if (c2File) {
+                        if (currentContributor2Logo.fileName) await deleteFile(currentContributor2Logo.fileName, STORAGE_PATH_LOGOS);
+                        const { url, fileName } = await uploadFile(c2File, STORAGE_PATH_LOGOS);
+                        updates.contributor2LogoUrl = url;
+                        updates.contributor2LogoFileName = fileName;
+                    }
+
+                    if (Object.keys(updates).length > 0) {
+                        await setDoc(siteConfigRef, updates, { merge: true });
+                    }
+                    document.getElementById('contributor1LogoUpload').value = '';
+                    document.getElementById('contributor2LogoUpload').value = '';
+                } catch (error) { console.error("Error updating contributor logos:", error); } 
+                finally { hideLoadingSpinner(); }
+            });
+            
+            // All other event listeners for inputs and modals...
+            document.getElementById('cancelEditPublicationBtn').addEventListener('click', resetAddPublicationForm);
+            document.getElementById('newsImage').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('uploadedNewsImagePreviewAdmin'), document.getElementById('newsImageFileNameDisplayAdmin'), currentNewsImage, 'noNewsImage'));
+            document.getElementById('cancelEditNewsBtn').addEventListener('click', resetAddNewsItemForm);
+            document.getElementById('headerLogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('headerLogoPreview'), document.getElementById('headerLogoFileNameDisplayAdmin'), currentHeaderLogo, 'noCustomHeaderLogo'));
+            document.getElementById('footerLogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('footerLogoPreview'), document.getElementById('footerLogoFileNameDisplayAdmin'), currentFooterLogo, 'noCustomFooterLogo'));
+            document.getElementById('contributor1LogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('contributor1LogoPreview'), document.getElementById('contributor1FileNameDisplayAdmin'), currentContributor1Logo, 'noLERMALogo'));
+            document.getElementById('contributor2LogoUpload').addEventListener('change', (e) => handleLogoFileInput(e.target, document.getElementById('contributor2LogoPreview'), document.getElementById('contributor2FileNameDisplayAdmin'), currentContributor2Logo, 'noMEDALogo'));
+            
+            const messageModalElement = document.getElementById('messageModal');
+            document.getElementById('closeMessageModal').addEventListener('click', () => messageModalElement.classList.add('hidden'));
+            messageModalElement.addEventListener('click', (e) => { if (e.target === messageModalElement) messageModalElement.classList.add('hidden'); });
+            
+            const publicationDetailsModal = document.getElementById('publicationDetailsModal');
+            document.getElementById('closePublicationDetailsModal').addEventListener('click', () => publicationDetailsModal.classList.add('hidden'));
+            publicationDetailsModal.addEventListener('click', (e) => { if (e.target === publicationDetailsModal) publicationDetailsModal.classList.add('hidden'); });
+
         };
     </script>
 </body>
