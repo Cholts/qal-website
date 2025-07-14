@@ -294,24 +294,31 @@
         import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, onSnapshot, query, orderBy, where, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
+        // IMPORTANT: Replace the entire 'hardcodedFirebaseConfig' object below with your ACTUAL Firebase project configuration.
+        // You can find this in your Firebase Console -> Project settings -> Your apps -> Web app.
         const hardcodedFirebaseConfig = {
-            apiKey: "AIzaSyDrOjIfbI2ttZF_Dp8JSRNpl_eL8XU4JGk",
-            authDomain: "quadernilibyawebsite.firebaseapp.com",
-            projectId: "quadernilibyawebsite",
-            storageBucket: "quadernilibyawebsite.firebasestorage.app",
-            messagingSenderId: "8372415971",
-            appId: "1:8372415971:web:76fdcc247797cac05784d6",
-            measurementId: "G-G74YV94Y52"
+            apiKey: "YOUR_FIREBASE_API_KEY", // Replace with your actual API Key
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // Replace with your actual Auth Domain
+            projectId: "YOUR_PROJECT_ID", // Replace with your actual Project ID
+            storageBucket: "YOUR_PROJECT_ID.appspot.com", // Replace with your actual Storage Bucket
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Replace with your actual Messaging Sender ID
+            appId: "YOUR_APP_ID", // Replace with your actual App ID
+            measurementId: "YOUR_MEASUREMENT_ID" // Optional, replace if you use Google Analytics
         };
         
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : hardcodedFirebaseConfig;
         const appId = typeof __app_id !== 'undefined' ? __app_id : firebaseConfig.projectId;
         console.log("Using appId for Firestore paths:", appId);
 
-        const DEFAULT_HEADER_LOGO_URL = 'https://firebasestorage.googleapis.com/v0/b/quadernilibyawebsite.firebasestorage.app/o/header_logos%2FLogo%20QAL%20arabo%20300%20dpi.jpeg?alt=media&token=c2d438d9-9ba2-49ec-a32a-517ed18775ee';
-        const DEFAULT_FOOTER_LOGO_URL = 'https://firebasestorage.googleapis.com/v0/b/quadernilibyawebsite.firebasestorage.app/o/header_logos%2FLogo%20QAL%20arabo%20300%20dpi.jpeg?alt=media&token=c2d438d9-9ba2-49ec-a32a-517ed18775ee';
-        const DEFAULT_CONTRIB1_LOGO_URL = 'https://firebasestorage.googleapis.com/v0/b/quadernilibyawebsite.firebasestorage.app/o/contributor_logos%2Flogo%20lerma.png?alt=media&token=f6966fec-902a-4e2a-b39e-a3ddb633e983';
-        const DEFAULT_CONTRIB2_LOGO_URL = 'https://firebasestorage.googleapis.com/v0/b/quadernilibyawebsite.firebasestorage.app/o/contributor_logos%2Flogo%20meda%20ets%20max.jpg?alt=media&token=c2071e4e-bf59-4f06-b99b-4b739737f51b';
+        // Default Logo URLs - These are placeholders. Once you upload custom logos via the admin panel,
+        // these will be replaced by the Firebase Storage URLs.
+        // The structure for Firebase Storage URLs is generally:
+        // https://firebasestorage.googleapis.com/v0/b/{your_storage_bucket}/o/artifacts/{your_project_id}/public/files/logos/{filename}?alt=media&token=YOUR_TOKEN
+        // You might need to update these if your default images are stored differently or if you want to use specific public URLs.
+        const DEFAULT_HEADER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_header_logo.png?alt=media&token=YOUR_TOKEN`; 
+        const DEFAULT_FOOTER_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_footer_logo.png?alt=media&token=YOUR_TOKEN`;
+        const DEFAULT_CONTRIB1_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib1_logo.png?alt=media&token=YOUR_TOKEN`;
+        const DEFAULT_CONTRIB2_LOGO_URL = `https://firebasestorage.googleapis.com/v0/b/${firebaseConfig.storageBucket}/o/artifacts/${appId}/public/files/logos/default_contrib2_logo.png?alt=media&token=YOUR_TOKEN`;
 
         const SITE_CONFIGURATION_DOC_ID = 'siteConfiguration';
         const PUBLIC_DATA_BASE_PATH = `artifacts/${appId}/public/data`;
@@ -516,7 +523,112 @@
                 tableHeaderAuthors: "Autori", tableHeaderYear: "Anno", tableHeaderActions: "Azioni",
                 noPublicationsToManage: "Nessuna pubblicazione da gestire.", addNewsItemTitle: "Aggiungi Nuova Notizia",
                 newsTitleLabel: "Titolo Notizia:", newsDescriptionLabel: "Descrizione Notizia:", newsImageLabel: "Immagine Notizia (Opzionale):",
-                addNewsItemButton: "Aggiungi Notizia", updateNewsItemButton: "Aggiorna Notizia", manageNewsHeading: "Gestisci Notizie Esistenti",
+                addNewsItemButton: "Add News Item", updateNewsItemButton: "Update News Item", manageNewsHeading: "Gestisci Notizie Esistenti",
+                tableHeaderDate: "Data", noNewsToManage: "Nessun elemento di notizia da gestire.", manageSiteLogosHeading: "Gestisci Loghi del Sito",
+                headerLogoUploadLabel: "Carica Logo Intestazione:", footerLogoUploadLabel: "Carica Logo Piè di Pagina:", updateLogosButton: "Aggiorna Loghi",
+                manageContributorLogosHeading: "Gestisci Loghi Contributori", contributor1LogoLabel: "Carica Logo L'ERMA:",
+                contributor2LogoLabel: "Carica Logo Fondazione MEDA:", updateContributorLogosButton: "Aggiorna Loghi Contributori",
+                copyrightText: "Quaderni di Archeologia della Libya. Tutti i diritti riservati.", contactUsLabel: "Contattaci:",
+                emailLabelShort: "Email:", phoneLabelShort: "Telefono:", selectedLabel: "Selezionato", currentLabel: "Attuale",
+                currentLabelShort: "Corrente", noCustomHeaderLogo: "Nessun logo intestazione personalizzato.", noCustomFooterLogo: "Nessun logo piè di pagina personalizzato.",
+                noLERMALogo: "Nessun logo L'ERMA.", noMEDALogo: "Nessun logo MEDA.", fileUploadFailed: "Caricamento file fallito: ",
+                checkStorageRules: "Controlla le regole di Firebase Storage.", firebaseInitError: "An error occurred during Firebase initialization. Please check your console for details and ensure your Firebase config is correct.",
+                viewNotFound: "Vista non trovata.", logoutSuccessful: "Logout riuscito!", logoutFailed: "Logout fallito: ",
+                invalidCredentials: "Credenziali non valide. Riprova.", tooManyLoginAttempts: "Troppi tentativi di accesso. Riprova più tardi.",
+                adminLoginSuccessful: "Accesso admin riuscito!", errorLoadingPublications: "Errore caricamento pubblicazioni. Controlla le regole di Firebase.",
+                errorLoadingCurrentIssue: "Errore caricamento numero corrente.", errorLoadingNews: "Errore caricamento notizie.",
+                errorLoadingAdminPublications: "Errore caricamento pubblicazioni admin.", noPermissionAddEditPublications: "Non hai il permesso di aggiungere/modificare pubblicazioni.",
+                fillAllRequiredFields: "Compila tutti i campi richiesti.", errorSavingPublication: "Errore salvataggio pubblicazione: ",
+                publicationUpdated: "Pubblicazione aggiornata con successo!", publicationAdded: "Pubblicazione aggiunta con successo!",
+                publicationNotFoundForEdit: "Pubblicazione non trovata per modifica.", errorLoadingPublicationForEdit: "Errore caricamento pubblicazione per modifica: ",
+                publicationNotFoundForDeletion: "Pubblicazione non trovata per eliminazione.", errorDeletingPublication: "Errore eliminazione pubblicazione: ",
+                publicationDeleted: "Pubblicazione eliminata con successo!",
+                errorLoadingAdminNews: "Errore caricamento notizie admin.", siteLogosNotFound: "Loghi sito non trovati nel database. Uso predefiniti.",
+                couldNotLoadLogos: "Impossibile caricare i loghi del sito.", siteLogosUpdated: "Loghi sito aggiornati con successo!",
+                errorUpdatingLogos: "Errore aggiornamento loghi sito: ", contributorLogosUpdated: "Loghi contributori aggiornati con successo!",
+                errorUpdatingContributorLogos: "Errore aggiornamento loghi contributori: ", noPermissionUpdateSiteSettings: "Non hai il permesso di aggiornare le impostazioni del sito.",
+                noPermissionAddNews: "Non hai il permesso di aggiungere/modificare notizie.", errorSavingNewsItem: "Errore nel salvataggio della notizia: ",
+                newsItemUpdated: "Notizia aggiornata con successo!", newsItemAdded: "Notizia aggiunta con successo!",
+                newsItemNotFoundForEdit: "Notizia non trovata per la modifica.", errorLoadingNewsItemForEdit: "Errore caricamento notizia per modifica: ",
+                newsItemDeleted: "Notizia eliminata con successo!", newsItemNotFoundForDeletion: "Notizia non trovata per l'eliminazione.",
+                errorDeletingNewsItem: "Errore eliminazione notizia: ",
+                yesButton: "Sì", noButton: "No", okButton: "OK", editButton: "Modifica", deleteButton: "Elimina",
+                noArabicAbstract: "Nessun abstract arabo disponibile.", noEnglishAbstract: "Nessun abstract inglese disponibile.",
+                noItalianAbstract: "Nessun abstract italiano disponibile.", fileNotFoundInStorage: "File non trovato nello storage: ", fileDeletionFailed: "Eliminazione file fallita: ",
+                noTitle: "No Title", noAuthors: "No Authors", noYear: "No Year"
+            },
+            it: { 
+                pageTitle: "QAL - Pubblicazioni", navAboutUs: "Chi Siamo", navEditorialBoard: "Comitato Editoriale",
+                navCurrentIssue: "Numero Corrente", navArchivalVolumes: "Volumi di Archivio", navEditorialEthics: "Linee Guida & Etica",
+                navNewsEvents: "Notizie & Eventi", adminLoginButton: "Accesso Admin", logoutButton: "Esci",
+                searchPlaceholder: "Cerca...", sortYearNewest: "Anno (Più Recente)", sortYearOldest: "Anno (Meno Recente)",
+                sortTitleAZ: "Titolo (A-Z)", sortTitleZA: "Titolo (Z-A)", sortAuthorAZ: "Autore (A-Z)",
+                sortAuthorZA: "Autore (A-Z)", loadingPublications: "Caricamento pubblicazioni...", noPubsFound: "Nessuna pubblicazione trovata.",
+                noSearchResults: "Nessun risultato corrisponde ai criteri di ricerca/filtro.", viewDetailsButton: "Vedi Dettagli",
+                confirmDelete: "Conferma Eliminazione", confirmDeleteMsg: "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata e rimuoverà i file associati dallo storage.",
+                successMessage: "Successo", errorMessage: "Errore", permissionDenied: "Permesso Negato",
+                loadingMessage: "Caricamento...", unavailable: "Non Disponibile", isbnLabel: "ISBN:", issnLabel: "ISSN:",
+                downloadFullPdfBtn: "Scarica PDF Completo", downloadArabicAbstractPdfBtn: "Scarica Abstract Arabo (PDF)",
+                downloadEnglishAbstractPdfBtn: "Scarica Abstract Inglese (PDF)", downloadItalianAbstractPdfBtn: "Scarica Abstract Italiano (PDF)",
+                arabicAbstractTextLabel: "Abstract Arabo (Testo):", englishAbstractTextLabel: "Abstract Inglese (Testo):",
+                italianAbstractTextLabel: "Abstract Italiano (Testo):", noDescription: "Nessuna descrizione disponibile.",
+                pubDetailsNotFound: "Dettagli pubblicazione non trovati.", fullPdfUnavailable: "PDF completo non disponibile.",
+                arabicAbstractPdfUnavailable: "Abstract arabo (PDF) non disponibile.", englishAbstractPdfUnavailable: "Abstract inglese (PDF) non disponibile.",
+                italianAbstractPdfUnavailable: "Abstract italiano (PDF) non disponibile.",
+                aboutUsHeading: "Chi Siamo Quaderni di Archeologia della Libya",
+                aboutUsPara1: "Benvenuti nel sito ufficiale di <strong>Quaderni di Archeologia della Libya</strong>, una prestigiosa rivista accademica dedicata alla ricerca archeologica in Libia. Avviata nel 1950, questa stimata serie documenta i significativi contributi delle missioni archeologiche italiane nella regione, promuovendo una comprensione più profonda della sua ricca storia antica.",
+                aboutUsPara2: "Dopo una breve pausa, la rivista ha ripreso con orgoglio la pubblicazione nel 2018 con una nuova serie, ristabilendosi come piattaforma scientifica di spicco. Forniamo un luogo essenziale per gli studiosi interessati all'archeologia e alla storia della Libia e del Maghreb più ampio, garantendo contenuti di alta qualità e sottoposti a revisione paritaria.",
+                aboutUsPara3: "I nostri volumi adottano un approccio multidisciplinare, presentando articoli su epigrafia, storia antica e coloniale, storia dell'archeologia, e studi territoriali. I contributi sono pubblicati nelle principali lingue europee, accompagnati da riassunti completi in inglese e arabo, per promuovere lo scambio accademico e la collaborazione internazionale.",
+                aboutUsPara4: "Questo sito web funge da risorsa dedicata alla serie, gestita da L'Erma di Bretschneider, una rinomata casa editrice accademica di Roma. Ci impegniamo a mantenere i più alti standard di eccellenza accademica e a garantire la continua diffusione globale della ricerca innovativa presentata nei \"Quaderni di Archeologia della Libya.\"",
+                currentPublicationsHeading: "Pubblicazioni Correnti", editorialBoardHeading: "Incontra il Comitato Editoriale",
+                editorialBoardIntro: "La nostra rivista è guidata da un illustre gruppo di studiosi ed esperti di archeologia libica e settori correlati. La loro competenza garantisce l'alta qualità e il rigore accademico delle nostre pubblicazioni.",
+                editorInChief: "Capo Redattore", associateEditor: "Associato Redattore", editorialBoardMember: "Membro del Comitato Editoriale",
+                editorialBoardComingSoon: "Lista completa del comitato editoriale e biografie in arrivo.",
+                currentIssueHeading: "Numero Corrente", noCurrentIssue: "Nessun numero corrente impostato. Controlla presto!",
+                archivalVolumesHeading: "Volumi di Archivio", archivalVolumesIntro: "Esplora la ricca storia della ricerca archeologica in Libia attraverso le nostre pubblicazioni passate. Sfoglia per anno o numero speciale qui sotto.",
+                loadingArchivalVolumes: "Caricamento volumi di archivio...", editorialEthicsHeading: "Linee Guida Editoriali & Codice Etico",
+                editorialGuidelinesTitle: "Linee Guida Editoriali", articlesSubmittedTo: "Gli articoli devono essere inviati a:",
+                submissionProcedureTitle: "Procedura di Sottomissione:", submissionProcedure1: "I contributi devono essere inviati in formato digitale .doc (Microsoft Word) come allegato e-mail.",
+                submissionProcedure2: "I contenuti saranno esaminati da almeno due revisori anonimi e, se necessario, restituiti all'autore per eventuali correzioni e modifiche.",
+                submissionProcedure3: "Un solo set di bozze sarà inviato agli autori che dovranno correggerle e restituirle entro la scadenza fissata dagli editori.",
+                submissionProcedure4: "Con riguardo alle illustrazioni, un file contenente didascalie e crediti fotografici deve essere inviato separatamente. Il testo deve essere accompagnato da una copia digitale delle immagini da pubblicare (si prega di usare WeTransfer se le immagini sono troppo pesanti per essere inviate come allegati e-mail).",
+                submissionProcedure5: "Le immagini devono essere in formato JPG o TIFF e con una risoluzione minima di 300 dpi (definizione pixel). Tutte le immagini inviate per la pubblicazione devono essere conformi alle norme sul copyright e deve esserci un accordo (o un modulo di liberatoria) sulla riproduzione dell'immagine da parte del titolare del copyright prima della pubblicazione. L'autore è l'unico responsabile dell'ottenimento di tali permessi. Nessuna immagine senza tali documenti di accompagnamento sarà pubblicata.",
+                articleRequirementsTitle: "Requisiti dell'Articolo:", articleRequirements1: "Un abstract di ca. 500 caratteri / 100 parole nella lingua del testo e in inglese.",
+                articleRequirements2: "Titolo in inglese.", articleRequirements3: "5 Parole Chiave in italiano e inglese.",
+                articleRequirements4: "Note a piè di pagina.", articleRequirements5: "Indirizzo e e-mail dell'autore.",
+                articleRequirements6: "Affiliazione istituzionale dell'autore.", formattingGuidelinesTitle: "Linee Guida di Formattazione:",
+                formattingGuidelines1: "Le citazioni sono inserite tra virgolette doppie \"...\"", formattingGuidelines2: "Le virgolette singole sono usate per enfatizzare parole o espressioni '...'.",
+                formattingGuidelines3: "Le traslitterazioni da altre lingue (come, ad esempio, dal greco o dall'arabo) sono in corsivo.",
+                formattingGuidelines4: "Se nel testo vengono usati caratteri speciali (come nel caso del greco), il font deve essere specificato.",
+                formattingGuidelines5: "Latin and Greek sources must be cited using the abbreviations in: Thesaurus Linguae Latinae, The Online Liddell-Scott-Jones Greek-English Lexicon (http://stephanus.tlg.uci.edu/lsj/01-authors_and_works.html) and, if not present, G.W.H. LAMPE, A Patristic Greek Lexicon, Oxford 1961.",
+                commonAbbreviationsTitle: "Abbreviazioni Comuni:", abbrCat: "cat. = catalogo", abbrCf: "cf. = confronta",
+                abbrCm: "cm = centimetri", abbrCol: "col./coll. = colonna/colonne", abbrEAD: "EAD. (maiuscole) = Eadem",
+                abbrEtc: "ecc. = eccetera", abbrF: "f./ff. = seguente / seguenti", abbrFig: "fig./figg. = figura / figure",
+                abbrFol: "fol. / foll. = foglio / fogli", abbrID: "ID. (maiuscole) = Idem", abbrIID: "IID. (maiuscole) = Iidem",
+                abbrL: "l./ll. = linea / linee", abbrNoInv: "N. inv. = numero inventario", abbrM: "m = metri",
+                abbrMs: "ms. / mss = manoscritto / manoscritti", abbrNo: "n. / nn. = numero / numeri", abbrNd: "s.d. = senza data",
+                abbrNp: "s.l. = senza luogo", abbrNote: "nota = nota", abbrP: "p./pp. = pagina/pagine", abbrSee: "vedi = vedi",
+                abbrSv: "s.v. (corsivo) = sub voce", abbrPl: "tav./tavv. = tavola / tavole", abbrVol: "vol. / voll. = volume / volumi",
+                fullGuidelinesNote: "Nota: Questo è un riassunto delle linee guida editoriali complete. Per le regole bibliografiche complete, si prega di fare riferimento al documento completo.",
+                ethicsStatementTitle: "Codice Etico e Dichiarazione di Malpractice", ethicsStatementPara1: "This document outlines the ethics principles and good practices applied by the publishing house L'ERMA di Bretschneider (hereafter L'ERMA) to the process of editing and publishing monographs, scientific journals, and other editorial content of scientific, educational, and outreach nature. L'ERMA is inspired by the ethical principles outlined by the Committee on Publication Ethics (hereinafter COPE), an international non-profit organization that aims to support publishers and editors in pursuing high standards of publishing ethics. Although COPE mainly provides guidelines and resources for publishers and editors of scientific journals, these can also be applied to the publication of monographs and other academic content.",
+                researchEthicsTitle: "I. Research ethics and integrity", researchEthicsPara1: "L'ERMA publications respect the ethical principles of COPE, which are: Reliability; honesty, respect, and responsibility in all aspects of research; Care, accuracy, and excellence in research practice; Transparency, reproducibility, traceability, and open communication; Attention and respect for all participants and research subjects.",
+                researchEthicsPara2: "Whoever believes that research published by L'ERMA has not been conducted in line with these ethical practices is invited to raise the issue with the publisher at lerma@lerma.it. Where possible, each report will be handled following COPE guidelines, and/or by submitting the matter to the Chairman of the Board of Directors of the publishing house and, if necessary, to the members of the Editorial Board of the publishing house.",
+                lastUpdatedDate: "Ultimo aggiornamento 27 febbraio 2024", newsEventsHeading: "Notizie & Eventi Correnti",
+                newsEventsIntro: "Rimani aggiornato con le ultime notizie, scoperte e annunci di Quaderni di Archeologia della Libya.",
+                noNewsUpdates: "Nessun aggiornamento di notizie. Controlla presto!", adminLoginHeading: "Accesso Admin",
+                emailLabel: "Email:", passwordLabel: "Password:", loginButton: "Accedi",
+                adminDashboardHeading: "Pannello di Amministrazione", welcomeAdmin: "Benvenuto,", managePublicationsBtn: "Gestisci Pubblicazioni",
+                manageNewsBtn: "Gestisci Notizie", manageSiteSettingsBtn: "Impostazioni Sito", addPublicationTitle: "Aggiungi Nuova Pubblicazione",
+                titleLabel: "Titolo:", authorsLabel: "Autori (separati da virgola):", publicationYearLabel: "Anno di Pubblicazione:",
+                descriptionLabel: "Descrizione:", coverImageLabel: "Immagine di Copertina (Opzionale):",
+                fullBookPdfLabel: "PDF Completo del Libro (Opzionale - Prime 20 Pagine):", arabicAbstractPdfLabel: "Abstract Arabo (PDF - Opzionale):",
+                englishAbstractPdfLabel: "Abstract Inglese (PDF - Opzionale):", italianAbstractPdfLabel: "Abstract Italiano (PDF - Opzionale):",
+                setCurrentIssueLabel: "Imposta come Numero Corrente", addPublicationButton: "Aggiungi Pubblicazione", updatePublicationButton: "Aggiorna Pubblicazione",
+                cancelEditButton: "Annulla Modifica", managePublicationsHeading: "Gestisci Pubblicazioni Esistenti", tableHeaderTitle: "Titolo",
+                tableHeaderAuthors: "Autori", tableHeaderYear: "Anno", tableHeaderActions: "Azioni",
+                noPublicationsToManage: "Nessuna pubblicazione da gestire.", addNewsItemTitle: "Aggiungi Nuova Notizia",
+                newsTitleLabel: "Titolo Notizia:", newsDescriptionLabel: "Descrizione Notizia:", newsImageLabel: "Immagine Notizia (Opzionale):",
+                addNewsItemButton: "Add News Item", updateNewsItemButton: "Update News Item", manageNewsHeading: "Gestisci Notizie Esistenti",
                 tableHeaderDate: "Data", noNewsToManage: "Nessun elemento di notizia da gestire.", manageSiteLogosHeading: "Gestisci Loghi del Sito",
                 headerLogoUploadLabel: "Carica Logo Intestazione:", footerLogoUploadLabel: "Carica Logo Piè di Pagina:", updateLogosButton: "Aggiorna Loghi",
                 manageContributorLogosHeading: "Gestisci Loghi Contributori", contributor1LogoLabel: "Carica Logo L'ERMA:",
@@ -939,7 +1051,6 @@
             }, (error) => { console.error("Error admin publications:", error); document.getElementById('adminPublicationsList').innerHTML = `<tr class="admin-table-row"><td colspan="4" class="px-6 py-4 text-red-500">${translations[currentLanguage]?.errorLoadingAdminPublications||'Error loading.'}</td></tr>`;});
         }
 
-        // Declare admin publication form elements
         const bookTitleInput = document.getElementById('bookTitle');
         const bookAuthorsInput = document.getElementById('bookAuthors');
         const bookYearInput = document.getElementById('bookYear');
@@ -1031,7 +1142,6 @@
             });
         }
 
-        // Declare admin news form elements
         const newsTitleInput = document.getElementById('newsTitle');
         const newsDescriptionInput = document.getElementById('newsDescription');
         const newsImageInput = document.getElementById('newsImage');
